@@ -12,6 +12,7 @@ define(function (require) {
         }
 
         render () {
+            planeCanvas.width = planeCanvas.width;
             this.plane.render();
         }
     }

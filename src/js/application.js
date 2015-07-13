@@ -2,6 +2,8 @@ requirejs.config({
     baseUrl: 'dist/js'
 });
 
+window.planeCanvas = document.getElementById('plane-game');
+
 define(function (require) {
     var InputManager = require('InputManager');
     var GameManager = require('GameManager');

@@ -5,9 +5,10 @@ define(function (require) {
     thumbImg.src = 'dist/img/plane.png';
 
     var Draw = {
-        drawPlane: function drawPlane(ctx, x, y) {
-            var r = arguments.length <= 3 || arguments[3] === undefined ? 10 : arguments[3];
+        drawPlane: function drawPlane(x, y) {
+            var r = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
 
+            var ctx = planeCanvas.getContext('2d');
             console.log(x, y);
             ctx.save();
             ctx.beginPath();

@@ -51,7 +51,8 @@ define(function (require) {
             this.emit('onchangePlane', {x: x, y: y});
         }
         touchMove (x, y) {
-            //Draw.drawPlane(this.ctx, x, y);
+            this.emit('onchangePlane', {x: x, y: y});
+
         }
 
     }

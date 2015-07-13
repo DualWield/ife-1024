@@ -7,6 +7,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 define(function (require) {
     var WIDTH = 600;
     var HEIGHT = 800;
+    var Entities = require('Entities');
 
     var GameManager = (function () {
         function GameManager(InputManager) {
@@ -14,14 +15,14 @@ define(function (require) {
 
             this.inputManager = new InputManager();
 
-            this.entities = [];
+            this.entities = new Entities();
             this.score = 0;
             this.canvas = document.getElementById('plane-game');
             this.ctx = this.canvas.getContext('2d');
             this.canvas.width = WIDTH;
             this.canvas.height = HEIGHT;
             this.ratio = WIDTH / HEIGHT;
-
+            this.inputManager.on('onchangePlane', this.onchangePlane.bind(this));
             this.setup();
         }
 
@@ -33,6 +34,8 @@ define(function (require) {
             value: function setup() {
                 window.addEventListener('resize', this.resize.bind(this), false);
                 this.resize();
+
+                this.loop();
             }
         }, {
             key: 'resize',
@@ -44,6 +47,20 @@ define(function (require) {
                 this.canvas.style.height = currentHeight + 'px';
 
                 this.scale = currentWidth / WIDTH;
+            }
+        }, {
+            key: 'onchangePlane',
+            value: function onchangePlane(obj) {
+                this.entities.plane.updatePosition(obj.x, obj.y);
+            }
+        }, {
+            key: 'loop',
+            value: function loop() {
+                requestAnimationFrame(this.loop.bind(this));
+                // change the model data
+                this.entities.update();
+                // render data to canvas
+                this.entities.render();
             }
         }]);
 

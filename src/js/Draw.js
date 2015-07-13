@@ -4,7 +4,7 @@ define(function (require) {
 
     var Draw = {
         drawPlane: (x, y, r = 10) => {
-            let ctx =
+            let ctx = planeCanvas.getContext('2d');
             console.log(x, y);
             ctx.save();
             ctx.beginPath();

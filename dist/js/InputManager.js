@@ -61,10 +61,15 @@ define(function (require) {
             }
         }, {
             key: 'touchStart',
-            value: function touchStart(x, y) {}
+            value: function touchStart(x, y) {
+                //Draw.drawPlane(this.ctx, x, y);
+                this.emit('onchangePlane', { x: x, y: y });
+            }
         }, {
             key: 'touchMove',
-            value: function touchMove(x, y) {}
+            value: function touchMove(x, y) {
+                this.emit('onchangePlane', { x: x, y: y });
+            }
         }]);
 
         return InputManager;
@@ -72,7 +77,3 @@ define(function (require) {
 
     return InputManager;
 });
-
-//Draw.drawPlane(this.ctx, x, y);
-
-//Draw.drawPlane(this.ctx, x, y);

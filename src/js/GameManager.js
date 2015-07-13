@@ -14,7 +14,7 @@ define(function (require) {
             this.canvas.width = WIDTH;
             this.canvas.height = HEIGHT;
             this.ratio = WIDTH / HEIGHT;
-            this.inputManager.on('onchangePlane', this.onchangePlane);
+            this.inputManager.on('onchangePlane', this.onchangePlane.bind(this));
             this.setup();
         }
 
@@ -38,8 +38,8 @@ define(function (require) {
 
             this.scale = currentWidth / WIDTH;
         }
-        onchangePlane () {
-            this.entities.plane.update(x, y);
+        onchangePlane (obj) {
+            this.entities.plane.updatePosition(obj.x, obj.y);
         }
         loop () {
             requestAnimationFrame(this.loop.bind(this));

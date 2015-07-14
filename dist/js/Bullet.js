@@ -5,47 +5,44 @@ var _createClass = (function () { function defineProperties(target, props) { for
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 define(function (require) {
-    var thumbImg = document.createElement('img');
-    thumbImg.src = 'dist/img/plane.png';
-    var Draw = require('Draw');
-    return (function () {
-        function Plane() {
-            _classCallCheck(this, Plane);
 
-            this.x = 50;
-            this.y = 50;
-            this.r = 40;
+    return (function () {
+        function Bullet(obj) {
+            _classCallCheck(this, Bullet);
+
+            this.x = obj.x;
+            this.y = obj.y;
+            this.remove = false;
+
+            this.speed = 10;
         }
 
-        _createClass(Plane, [{
-            key: 'updatePosition',
-            value: function updatePosition(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-        }, {
+        _createClass(Bullet, [{
             key: 'update',
-            value: function update(x, y) {
-                var r = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+            value: function update() {
+                this.y = this.y - this.speed;
             }
         }, {
             key: 'render',
             value: function render() {
-                var x = this.x,
-                    y = this.y,
-                    r = this.r;
+                this.drawBullet(this.x, this.y);
+            }
+        }, {
+            key: 'drawBullet',
+            value: function drawBullet(x, y) {
+                var w = arguments.length <= 2 || arguments[2] === undefined ? 3 : arguments[2];
+                var h = arguments.length <= 3 || arguments[3] === undefined ? 8 : arguments[3];
+
                 var ctx = planeCanvas.getContext('2d');
-                //console.log(x, y);
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(x + 5, y + 5, r, 0, Math.PI * 2, true);
-                ctx.closePath();
-                ctx.clip();
-                ctx.drawImage(thumbImg, 0, 0, thumbImg.width, thumbImg.width, x + 5 - r, y + 5 - r, r * 2, r * 2);
+                ctx.rect(x - w / 2, y - h / 2, w, h);
+                ctx.fillStyle = 'red';
+                ctx.fill();
                 ctx.restore();
             }
         }]);
 
-        return Plane;
+        return Bullet;
     })();
 });

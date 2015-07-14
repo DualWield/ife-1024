@@ -4,6 +4,9 @@ requirejs.config({
 
 window.planeCanvas = document.getElementById('plane-game');
 
+const WIDTH = 600;
+const HEIGHT = 800;
+
 define(function (require) {
     var InputManager = require('InputManager');
     var GameManager = require('GameManager');

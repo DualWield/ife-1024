@@ -1,6 +1,5 @@
 define(function (require) {
-    const WIDTH = 600;
-    const HEIGHT = 800;
+
     let Entities = require('Entities');
 
     class GameManager {

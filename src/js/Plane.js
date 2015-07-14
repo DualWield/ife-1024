@@ -28,6 +28,7 @@ define(function (require) {
             ctx.closePath();
             ctx.clip();
             ctx.drawImage(thumbImg, 0, 0, thumbImg.width, thumbImg.width, x + 5 - r, y + 5 - r, r * 2, r * 2);
+            ctx.restore();
         }
     }
 });

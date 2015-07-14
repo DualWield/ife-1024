@@ -5,8 +5,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 define(function (require) {
-    var WIDTH = 600;
-    var HEIGHT = 800;
+
     var Entities = require('Entities');
 
     var GameManager = (function () {

@@ -1,8 +1,8 @@
 var gulp = require("gulp");
 var babel = require("gulp-babel");
 var watch = require("gulp-watch");
-
-gulp.task("default", function () {
+var connect = require('gulp-connect');
+gulp.task("watch", function () {
     gulp.src('src/css/*')
         .pipe(gulp.dest('dist/css'));
 
@@ -19,3 +19,12 @@ gulp.task("default", function () {
             .pipe(gulp.dest("dist/js"));
     });
 });
+
+gulp.task("connect", function () {
+    connect.server({
+        root: './',
+        livereload: true
+    });
+});
+
+gulp.task("default", ["watch", "connect"]);

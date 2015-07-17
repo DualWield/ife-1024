@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
     <title>HTML5打飞机</title>
     <link rel="stylesheet" href="dist/css/play.css"/>
     <link rel="stylesheet" href="dist/css/normalize.css"/>
@@ -16,21 +17,25 @@
             overflow: hidden;
             display: block;
         }
+
         html, body {
             width: 100%;
             height: 100%;
             font-family: 'Lato', 'Microsoft YaHei', sans-serif;
         }
+
         #container {
             width: 100%;
             height: 100%;
         }
+
         .panel {
             height: 100%;
             position: absolute;
             top: 0;
             padding: 20px;
         }
+
         #team {
             width: 50%;
             text-align: right;
@@ -40,6 +45,7 @@
             margin: 0;
             position: relative;
         }
+
         #team:hover {
             text-align: center;
             background: #BFEFFF;
@@ -61,6 +67,7 @@
             -o-transition: 1s ease-in;
             transition: 1s ease-in;
         }
+
         .member-item {
             height: 100px;
             width: 100%;
@@ -79,6 +86,7 @@
         #member2 {
             transition: 0.6s ease-in 0.2s;
         }
+
         #member3 {
             transition: 0.6s ease-in 0.4s;
         }
@@ -91,6 +99,7 @@
             opacity: 1;
             margin-left: -100px;
         }
+
         #game {
             left: 50%;
             width: 50%;
@@ -102,22 +111,26 @@
             position: absolute;
             transition: 0.6s ease-in;
         }
+
         #game:hover {
             text-align: center;
             background: #d1d2d4;
         }
+
         .intro {
             padding-top: 3px;
             text-align: right;
             margin-right: 110px;
             position: relative;
         }
-        .member-item>img {
+
+        .member-item > img {
             height: 100px;
             width: 100px;
             border-radius: 50px;
             float: right;
         }
+
         h1 {
             top: 50%;
             font-size: 3rem;
@@ -125,11 +138,13 @@
             margin-top: -1.5rem;
             transition: 0.6s ease-in;
         }
+
         h1.on {
             top: 5%;
             opacity: 0;
             opacity: 1;
         }
+
         #plane-game {
             margin: 20px auto;
             position: absolute;
@@ -137,6 +152,7 @@
             left: 100%;
             opacity: 0;
         }
+
         #plane-game.on {
             margin-left: -300px;
             left: 50%;
@@ -149,31 +165,38 @@
 <div id="container">
     <div id="team" class="panel">
         <h1>1024</h1>
+
         <div id="member">
             <div id="member1" class="member-item">
                 <img src="dist/img/496966199_big.png" alt=""/>
+
                 <div class="intro">
                     <p>徐立</p>
+
                     <p>上海大学</p>
                 </div>
             </div>
             <div class="clear"></div>
             <div id="member2" class="member-item">
                 <img src="dist/img/646546851_big.png" alt=""/>
+
                 <div class="intro">
                     <p>高鑫</p>
+
                     <p>上海大学</p>
                 </div>
             </div>
             <div class="clear"></div>
             <div id="member3" class="member-item">
                 <img src="dist/img/250985201_big.png" alt=""/>
+
                 <div class="intro">
                     <p>丁文豪</p>
+
                     <p>上海大学</p>
                 </div>
             </div>
-            
+
         </div>
     </div>
     <div id="game" class="panel">

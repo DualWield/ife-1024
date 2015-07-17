@@ -45,7 +45,23 @@ define(function (require) {
                     if (event.touches.length > 1 || event.targetTouches > 1) {
                         return; // Ignore if touching with more than 1 finger
                     }
+                    var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
+                    var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+
+                    _this.touchStart(x, y);
                 });
+                gameContainer.addEventListener('touchmove', function (event) {
+                    var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
+                    var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+
+                    _this.touchMove(x, y);
+
+                    event.preventDefault();
+                });
+                gameContainer.addEventListener('touchend', function (event) {
+                    event.preventDefault();
+                });
+
                 gameContainer.addEventListener('mouseenter', function (event) {
                     var x = (event.clientX - gameContainer.offsetLeft - gameContainerContainer.offsetLeft) / game.scale;
                     var y = (event.clientY - gameContainer.offsetTop - gameContainerContainer.offsetTop) / game.scale;

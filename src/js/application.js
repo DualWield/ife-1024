@@ -4,8 +4,18 @@ requirejs.config({
 
 window.planeCanvas = document.getElementById('plane-game');
 
-const WIDTH = 600;
-const HEIGHT = 800;
+let ua = navigator.userAgent.toLowerCase();
+let android = ua.indexOf('android') > -1 ? true : false;
+let ios = (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) ? true : false;
+if(android || ios) {
+    window.WIDTH = window.innerWidth;
+    window.HEIGHT = window.innerHeight;
+}else {
+    window.WIDTH = 600;
+    window.HEIGHT = 800;
+}
+
+
 
 define(function (require) {
     var InputManager = require('InputManager');

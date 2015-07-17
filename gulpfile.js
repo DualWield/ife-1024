@@ -3,8 +3,10 @@ var babel = require("gulp-babel");
 var watch = require("gulp-watch");
 var connect = require('gulp-connect');
 
+
 gulp.task("default",["move", "connect", "watch"]);
 gulp.task("move", function () {
+
     gulp.src('src/css/*')
         .pipe(gulp.dest('dist/css'));
 
@@ -23,12 +25,10 @@ gulp.task("connect", function () {
 
 gulp.task("watch", function () {
     watch(['src/js/*.js', 'src/css/*'], function () {
-        gulp.src('src/css/*')
-            .pipe(gulp.dest('dist/css'));
-
         return gulp.src("src/js/*.js")
             .pipe(babel())
             .pipe(gulp.dest("dist/js"));
     });
+
 
 });

@@ -39,6 +39,7 @@ define(function (require) {
                 var _this = this;
 
                 var gameContainer = document.getElementById('plane-game');
+                var gameContainerContainer = document.getElementById('game');
                 this.ctx = gameContainer.getContext('2d');
                 gameContainer.addEventListener('touchstart', function (event) {
                     if (event.touches.length > 1 || event.targetTouches > 1) {
@@ -46,13 +47,13 @@ define(function (require) {
                     }
                 });
                 gameContainer.addEventListener('mouseenter', function (event) {
-                    var x = (event.clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.clientX - gameContainer.offsetLeft - gameContainerContainer.offsetLeft) / game.scale;
+                    var y = (event.clientY - gameContainer.offsetTop - gameContainerContainer.offsetTop) / game.scale;
                     _this.touchStart(x, y);
                 });
                 gameContainer.addEventListener('mousemove', function (event) {
-                    var x = (event.clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.clientX - gameContainer.offsetLeft - gameContainerContainer.offsetLeft) / game.scale;
+                    var y = (event.clientY - gameContainer.offsetTop - gameContainerContainer.offsetTop) / game.scale;
                     _this.touchMove(x, y);
                 });
                 gameContainer.addEventListener('mousemove', function (event) {

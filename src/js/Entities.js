@@ -1,47 +1,37 @@
 define(function (require) {
-    var Plane = require('Plane');
-    var Bullet = require('Bullet');
+    var PlaneManger = require('PlaneManger');
+    var BulletManger = require('BulletManger');
+    var EnemyManger = require('EnemyManger');
+
 
     return class Entities {
         constructor () {
-            this.plane = new Plane();
-            this.bullets = [];
+            var plane = this.planeManger = new PlaneManger(this);
+            var bullet = this.bulletManger = new BulletManger(this);
+            var enemy = this.enemyManger = new EnemyManger(this);
 
-            this.bulletSpeed = 5;
-            this.bulletInterval = this.bulletSpeed;
+            this.entities = [plane, bullet, enemy];
         }
 
         update () {
-            this.bulletInterval--;
-            if(this.bulletInterval < 0) {
-                this.bullets.push(new Bullet({
-                    x: this.plane.x + 5,
-                    y: this.plane.y - 20
-                }));
-                this.bulletInterval = this.bulletSpeed;
-            }
-            let newBullets = [];
-            this.bullets.forEach(function (bullet) {
-                if( bullet.x > WIDTH || bullet.x < 0 ||
-                    bullet.y > HEIGHT || bullet.y < 0){
+            // bullet
+            this.bulletManger.update();
 
-                }else {
-                    newBullets.push(bullet);
-                    bullet.update();
-                }
+            // plane
+            this.planeManger.update();
 
-            });
-            this.bullets = newBullets;
-            this.plane.update();
+            // enemy
 
         }
 
         render () {
+            // clear the canvas
             planeCanvas.width = planeCanvas.width;
-            this.plane.render();
-            this.bullets.forEach(function (bullet) {
-                bullet.render();
-            })
+            // bullet
+            this.bulletManger.render();
+            // plane
+            this.planeManger.render();
+
         }
     }
 });

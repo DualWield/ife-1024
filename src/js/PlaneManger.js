@@ -15,7 +15,6 @@ define(function (require) {
         }
 
         update (x, y, r = 10) {
-
         }
 
         render () {

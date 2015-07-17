@@ -3,10 +3,8 @@ var babel = require("gulp-babel");
 var watch = require("gulp-watch");
 var connect = require('gulp-connect');
 
-
-gulp.task("default",["move", "connect", "watch"]);
-gulp.task("move", function () {
-
+var move = function () {
+    console.log('move');
     gulp.src('src/css/*')
         .pipe(gulp.dest('dist/css'));
 
@@ -16,7 +14,9 @@ gulp.task("move", function () {
 
     gulp.src('src/img/*')
         .pipe(gulp.dest('dist/img'));
-});
+}
+gulp.task("default",["move", "connect", "watch"]);
+gulp.task("move", move);
 gulp.task("connect", function () {
     connect.server({
         livereload: true
@@ -24,11 +24,7 @@ gulp.task("connect", function () {
 });
 
 gulp.task("watch", function () {
-    watch(['src/js/*.js', 'src/css/*'], function () {
-        return gulp.src("src/js/*.js")
-            .pipe(babel())
-            .pipe(gulp.dest("dist/js"));
-    });
+    watch(['src/js/*.js', 'src/css/*'], move);
 
 
 });

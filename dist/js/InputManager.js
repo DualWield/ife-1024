@@ -44,14 +44,14 @@ define(function (require) {
                     if (event.touches.length > 1 || event.targetTouches > 1) {
                         return; // Ignore if touching with more than 1 finger
                     }
-                    var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.touches[0].clientX - $(gameContainer).offset().left) / game.scale;
+                    var y = (event.touches[0].clientY - $(gameContainer).offset().top) / game.scale;
 
                     _this.touchStart(x, y);
                 });
                 gameContainer.addEventListener('touchmove', function (event) {
-                    var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.touches[0].clientX - $(gameContainer).offset().left) / game.scale;
+                    var y = (event.touches[0].clientY - $(gameContainer).offset().top) / game.scale;
 
                     _this.touchMove(x, y);
 
@@ -62,13 +62,13 @@ define(function (require) {
                 });
 
                 gameContainer.addEventListener('mouseenter', function (event) {
-                    var x = (event.clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.clientX - $(gameContainer).offset().left) / game.scale;
+                    var y = (event.clientY - $(gameContainer).offset().top) / game.scale;
                     _this.touchStart(x, y);
                 });
                 gameContainer.addEventListener('mousemove', function (event) {
-                    var x = (event.clientX - gameContainer.offsetLeft) / game.scale;
-                    var y = (event.clientY - gameContainer.offsetTop) / game.scale;
+                    var x = (event.clientX - $(gameContainer).offset().left) / game.scale;
+                    var y = (event.clientY - $(gameContainer).offset().top) / game.scale;
                     _this.touchMove(x, y);
                 });
                 gameContainer.addEventListener('mousemove', function (event) {

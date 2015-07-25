@@ -103,7 +103,7 @@ function init() {
 
     loader = new createjs.LoadQueue();
     loader.addEventListener('complete', handleComplete);
-    loader.loadManifest(manifest, true, './img/');
+    loader.loadManifest(manifest, true, 'task/task1/img/');
 }
 
 function handleComplete() {

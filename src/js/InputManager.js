@@ -2,19 +2,19 @@ define(function (require) {
     let Draw = require('Draw');
 
     class InputManager {
-        constructor () {
+        constructor() {
             this.events = {};
             this.listen();
         }
 
-        on (event, callback) {
+        on(event, callback) {
             if (!this.events[event]) {
                 this.events[event] = [];
             }
             this.events[event].push(callback);
         }
 
-        emit (event, data) {
+        emit(event, data) {
             var callbacks = this.events[event];
             if (callbacks) {
                 callbacks.forEach(function (callback) {
@@ -22,7 +22,8 @@ define(function (require) {
                 });
             }
         }
-        listen () {
+
+        listen() {
             var gameContainer = document.getElementById('plane-game');
             this.ctx = gameContainer.getContext('2d');
             gameContainer.addEventListener('touchstart', (event) => {
@@ -30,8 +31,25 @@ define(function (require) {
                     event.targetTouches > 1) {
                     return; // Ignore if touching with more than 1 finger
                 }
+                var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
+                var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+
+                this.touchStart(x, y);
 
             });
+            gameContainer.addEventListener('touchmove', (event) => {
+                var x = (event.touches[0].clientX - gameContainer.offsetLeft) / game.scale;
+                var y = (event.touches[0].clientY - gameContainer.offsetTop) / game.scale;
+
+                this.touchMove(x, y);
+
+                event.preventDefault();
+
+            });
+            gameContainer.addEventListener('touchend', (event) => {
+                event.preventDefault();
+            });
+
             gameContainer.addEventListener('mouseenter', (event) => {
                 var x = (event.clientX - gameContainer.offsetLeft) / game.scale;
                 var y = (event.clientY - gameContainer.offsetTop) / game.scale;
@@ -46,11 +64,13 @@ define(function (require) {
                 event.preventDefault();
             });
         }
-        touchStart (x, y) {
+
+        touchStart(x, y) {
             //Draw.drawPlane(this.ctx, x, y);
             this.emit('onchangePlane', {x: x, y: y});
         }
-        touchMove (x, y) {
+
+        touchMove(x, y) {
             this.emit('onchangePlane', {x: x, y: y});
 
         }

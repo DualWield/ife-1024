@@ -24,12 +24,17 @@ var catWidth;
 var goldWidth;
 var goldHeight;
 
-var remainTime = 6000;
+var timeSet = 6;
+var remainTime = timeSet * 1000;
 var timeText;
 
 var setting;
 
 var start = true;
+
+var overContainer,
+    settingContainer;
+
 
 window.addEventListener('keydown', function (e) {
     if (!e) {
@@ -142,15 +147,21 @@ function handleSetting() {
 }
 
 function drawSettingRect() {
+    settingContainer = new createjs.Container();
+
     var s = new createjs.Shape();
     s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
 
-    //var overScoreText = new createjs.Text('你的分数: ' + score, '36px Arial', '#000');
-    stage.addChild(s);
+    settingContainer.addChild(s);
+
+    stage.addChild(settingContainer);
+
     stage.update();
 }
 
 function drawOverRect() {
+    overContainer = new createjs.Container();
+
     var s = new createjs.Shape();
     s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
 
@@ -159,7 +170,16 @@ function drawOverRect() {
     overScoreText.x = w/2;
     overScoreText.y = h/2;
 
-    stage.addChild(s, overScoreText);
+    var restartText = new createjs.Text('点击面板重新开始', '12 Arial', '#000');
+    restartText.textAlign = 'center';
+    restartText.x = w/2;
+    restartText.y = overScoreText.y +  60;
+
+    overContainer.addChild(s, overScoreText, restartText);
+
+    s.on('click', restart, this);
+
+    stage.addChild(overContainer);
     stage.update();
 }
 
@@ -184,8 +204,13 @@ function gamePause() {
 
 function restart() {
     start = true;
+    score = 0;
     createjs.Ticker.paused = false;
-    remainTime = createjs.Ticker.getTime() + 6000;
+    stage.removeChild(overContainer, settingContainer);
+    remainTime = createjs.Ticker.getTime() + timeSet * 1000;
+    goldContainer.removeAllChildren();
+    scoreText.text = '分数: ' + score;
+    stage.update();
 }
 
 function tick(event) {

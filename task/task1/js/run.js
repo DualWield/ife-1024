@@ -27,6 +27,8 @@ var goldHeight;
 var remainTime = 6000;
 var timeText;
 
+var setting;
+
 var start = true;
 
 window.addEventListener('keydown', function (e) {
@@ -88,6 +90,10 @@ function init() {
         {
             src: 'yuanbao.png',
             id: 'gold'
+        },
+        {
+            src: 'setting.png',
+            id: 'setting'
         }
     ];
 
@@ -118,7 +124,14 @@ function handleComplete() {
     goldWidth = gold.image.width;
     goldHeight = gold.image.height;
 
-    stage.addChild(cat, goldContainer, scoreText, timeText);
+    // add setting icon
+    setting = new createjs.Bitmap(loader.getResult('setting'));
+    setting.setTransform(w - setting.image.width/2 - 10, h - setting.image.height/2 - 10, 0.5, 0.5);
+
+
+
+
+    stage.addChild(cat, goldContainer, scoreText, timeText, setting);
 
     createjs.Ticker.timingMode = createjs.Ticker.RAF;
     createjs.Ticker.addEventListener('tick', tick);

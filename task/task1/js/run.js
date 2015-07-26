@@ -84,11 +84,11 @@ function init() {
 
     manifest = [
         {
-            src: '猫猫.png',
+            src: 'cat.png',
             id: 'cat'
         },
         {
-            src: 'yuanbao.png',
+            src: 'gold.png',
             id: 'gold'
         },
         {

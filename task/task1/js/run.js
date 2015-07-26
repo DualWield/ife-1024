@@ -126,15 +126,27 @@ function handleComplete() {
 
     // add setting icon
     setting = new createjs.Bitmap(loader.getResult('setting'));
-    setting.setTransform(w - setting.image.width/2 - 10, h - setting.image.height/2 - 10, 0.5, 0.5);
+    setting.setTransform(w - setting.image.width / 2 - 10, h - setting.image.height / 2 - 10, 0.5, 0.5);
 
-
-
+    setting.on('click', handleSetting, this);
 
     stage.addChild(cat, goldContainer, scoreText, timeText, setting);
 
     createjs.Ticker.timingMode = createjs.Ticker.RAF;
     createjs.Ticker.addEventListener('tick', tick);
+}
+
+function handleSetting() {
+    gamePause();
+    drawSettingRect();
+}
+
+function drawSettingRect() {
+    var s = new createjs.Shape();
+    s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
+
+    stage.addChild(s);
+    stage.update();
 }
 
 function addGold(x, y) {
@@ -146,7 +158,7 @@ function addGold(x, y) {
 }
 
 
-function pause() {
+function gamePause() {
     start = false;
     createjs.Ticker.paused = true;
 }

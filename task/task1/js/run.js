@@ -5,7 +5,7 @@ document.body.appendChild(canvas);
 
 window.onload = init;
 var stage, w, h, loader;
-var sky, cat, ground, hill, hill2;
+var cat, gold;
 var goldContainer;
 
 var KEYCODE_LEFT = 37;
@@ -14,7 +14,7 @@ var KEYCODE_RIGHT = 39;
 var moveLeft = false;
 var moveRight = false;
 
-var maxGolds = 2;
+var maxGolds = 8;
 var score = 0;
 var scoreText;
 

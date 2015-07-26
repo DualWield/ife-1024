@@ -108,7 +108,7 @@ function init() {
 
 
     loader = new createjs.LoadQueue();
-    loader.addEventListener('complete', handleComplete);
+    loader.addEventListener('complete', handleLoadComplete);
     loader.loadManifest(manifest, true, './img/');
 }
 
@@ -145,7 +145,12 @@ function drawSettingRect() {
     var s = new createjs.Shape();
     s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
 
-    stage.addChild(s);
+    var overScoreText = new createjs.Text('你的分数: ' + score, '36px Arial', '#000');
+    overScoreText.x = w/2;
+    overScoreText.y = h/4;
+    overScoreText.textAlign = 'center';
+    //console.log(overScoreText.lineWidth, overScoreText.lineHeight);
+    stage.addChild(s, overScoreText);
     stage.update();
 }
 
@@ -153,7 +158,11 @@ function drawOverRect() {
     var s = new createjs.Shape();
     s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
 
-    stage.addChild(s);
+    var overScoreText = new createjs.Text('你的分数: ' + score, '36px Arial', '#000');
+    overScoreText.x = w/2 - overScoreText.lineWidth/2;
+    overScoreText.y = h/4 + 100;
+
+    stage.addChild(s, overScoreText);
     stage.update();
 }
 

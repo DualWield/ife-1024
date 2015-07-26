@@ -5,7 +5,7 @@ document.body.appendChild(canvas);
 
 window.onload = init;
 var stage, w, h, loader;
-var sky, cat, ground, hill, hill2;
+var cat, gold;
 var goldContainer;
 
 var KEYCODE_LEFT = 37;
@@ -14,7 +14,7 @@ var KEYCODE_RIGHT = 39;
 var moveLeft = false;
 var moveRight = false;
 
-var maxGolds = 2;
+var maxGolds = 8;
 var score = 0;
 var scoreText;
 
@@ -24,10 +24,17 @@ var catWidth;
 var goldWidth;
 var goldHeight;
 
-var remainTime = 6000;
+var timeSet = 6;
+var remainTime = timeSet * 1000;
 var timeText;
 
+var setting;
+
 var start = true;
+
+var overContainer,
+    settingContainer;
+
 
 window.addEventListener('keydown', function (e) {
     if (!e) {
@@ -82,12 +89,16 @@ function init() {
 
     manifest = [
         {
-            src: '猫猫.png',
+            src: 'cat.png',
             id: 'cat'
         },
         {
-            src: 'yuanbao.png',
+            src: 'gold.png',
             id: 'gold'
+        },
+        {
+            src: 'setting.png',
+            id: 'setting'
         }
     ];
 
@@ -102,11 +113,11 @@ function init() {
 
 
     loader = new createjs.LoadQueue();
-    loader.addEventListener('complete', handleComplete);
-    loader.loadManifest(manifest, true, 'task/task1/img/');
+    loader.addEventListener('complete', handleLoadComplete);
+    loader.loadManifest(manifest, true, './img/');
 }
 
-function handleComplete() {
+function handleLoadComplete() {
 
     cat = new createjs.Bitmap(loader.getResult('cat'));
     cat.x = 100;
@@ -118,10 +129,63 @@ function handleComplete() {
     goldWidth = gold.image.width;
     goldHeight = gold.image.height;
 
-    stage.addChild(cat, goldContainer, scoreText, timeText);
+    // add setting icon
+    setting = new createjs.Bitmap(loader.getResult('setting'));
+    setting.setTransform(w - setting.image.width / 2 - 10, h - setting.image.height / 2 - 10, 0.5, 0.5);
+
+    setting.on('click', handleSetting, this);
+
+    stage.addChild(cat, goldContainer, scoreText, timeText, setting);
 
     createjs.Ticker.timingMode = createjs.Ticker.RAF;
     createjs.Ticker.addEventListener('tick', tick);
+}
+
+function handleSetting() {
+    gamePause();
+    drawSettingRect();
+}
+
+function drawSettingRect() {
+    settingContainer = new createjs.Container();
+
+    var s = new createjs.Shape();
+    s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
+
+    settingContainer.addChild(s);
+
+    stage.addChild(settingContainer);
+
+    stage.update();
+}
+
+function drawOverRect() {
+    overContainer = new createjs.Container();
+
+    var s = new createjs.Shape();
+    s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
+
+    var overScoreText = new createjs.Text('你的分数: ' + score, '36px Arial', '#000');
+    overScoreText.textAlign = 'center';
+    overScoreText.x = w/2;
+    overScoreText.y = h/2;
+
+    var restartText = new createjs.Text('点击面板重新开始', '12 Arial', '#000');
+    restartText.textAlign = 'center';
+    restartText.x = w/2;
+    restartText.y = overScoreText.y +  60;
+
+    overContainer.addChild(s, overScoreText, restartText);
+
+    s.on('click', restart, this);
+
+    stage.addChild(overContainer);
+    stage.update();
+}
+
+function handleGameOver() {
+    gamePause();
+    drawOverRect();
 }
 
 function addGold(x, y) {
@@ -133,15 +197,20 @@ function addGold(x, y) {
 }
 
 
-function pause() {
+function gamePause() {
     start = false;
     createjs.Ticker.paused = true;
 }
 
 function restart() {
     start = true;
+    score = 0;
     createjs.Ticker.paused = false;
-    remainTime = createjs.Ticker.getTime() + 6000;
+    stage.removeChild(overContainer, settingContainer);
+    remainTime = createjs.Ticker.getTime() + timeSet * 1000;
+    goldContainer.removeAllChildren();
+    scoreText.text = '分数: ' + score;
+    stage.update();
 }
 
 function tick(event) {
@@ -154,10 +223,10 @@ function tick(event) {
     var deltaS = event.delta / 1000;
     var position = cat.x + 150 * deltaS;
 
-//        if (remainTime <= createjs.Ticker.getTime()) {
-//            pause();
-//            return;
-//        }
+    if (remainTime <= createjs.Ticker.getTime()) {
+        handleGameOver();
+        return;
+    }
 
     timeText.text = '剩余时间: ' + Math.floor((remainTime - createjs.Ticker.getTime()) / 1000);
 

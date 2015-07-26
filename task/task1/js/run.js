@@ -112,7 +112,7 @@ function init() {
     loader.loadManifest(manifest, true, './img/');
 }
 
-function handleComplete() {
+function handleLoadComplete() {
 
     cat = new createjs.Bitmap(loader.getResult('cat'));
     cat.x = 100;
@@ -149,6 +149,19 @@ function drawSettingRect() {
     stage.update();
 }
 
+function drawOverRect() {
+    var s = new createjs.Shape();
+    s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(w/4, h/4, w/2, h/2, 30);
+
+    stage.addChild(s);
+    stage.update();
+}
+
+function handleGameOver() {
+    gamePause();
+    drawOverRect();
+}
+
 function addGold(x, y) {
     var newGold = new createjs.Bitmap(loader.getResult('gold'));
     newGold.y = y || 0;
@@ -179,10 +192,10 @@ function tick(event) {
     var deltaS = event.delta / 1000;
     var position = cat.x + 150 * deltaS;
 
-//        if (remainTime <= createjs.Ticker.getTime()) {
-//            pause();
-//            return;
-//        }
+        if (remainTime <= createjs.Ticker.getTime()) {
+            handleGameOver();
+            return;
+        }
 
     timeText.text = '剩余时间: ' + Math.floor((remainTime - createjs.Ticker.getTime()) / 1000);
 

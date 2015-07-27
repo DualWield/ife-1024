@@ -4,9 +4,11 @@ define(function (require) {
         constructor (obj) {
             this.x = obj.x;
             this.y = obj.y;
+            this.w = 3;
+            this.h = 8;
             this.remove = false;
 
-            this.speed = 10;
+            this.speed = 50;
 
         }
 
@@ -18,8 +20,9 @@ define(function (require) {
             this.drawBullet(this.x ,this.y);
         }
 
-        drawBullet (x, y, w=3, h=8) {
+        drawBullet (x, y) {
             let ctx = planeCanvas.getContext('2d');
+            let {w, h} = this;
             ctx.save();
             ctx.beginPath();
             ctx.rect(x - w/2, y - h/2, w, h);

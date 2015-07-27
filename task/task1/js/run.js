@@ -1,3 +1,4 @@
+'use strict';
 var canvas = document.createElement('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -27,6 +28,7 @@ var goldHeight;
 var timeSet = 6;
 var remainTime = timeSet * 1000;
 var timeText;
+var manifest;
 
 var setting;
 
@@ -104,12 +106,13 @@ function init() {
 
     goldContainer = new createjs.Container();
     scoreText = new createjs.Text('分数: 0', '36px Arial', '#fff');
-    scoreText.x = 32;
-    scoreText.y = 32;
+    var margin = 32;
+    scoreText.x = margin;
+    scoreText.y = margin;
 
     timeText = new createjs.Text('剩余时间: ' + remainTime / 1000, '36px Arial', '#fff');
-    timeText.x = w - 220 - 32;
-    timeText.y = 32;
+    timeText.x = w - timeText.getMeasuredWidth() - margin;
+    timeText.y = margin;
 
 
     loader = new createjs.LoadQueue();

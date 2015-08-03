@@ -117,7 +117,9 @@ function init() {
 
     loader = new createjs.LoadQueue();
     loader.addEventListener('complete', handleLoadComplete);
+
     loader.loadManifest(manifest, true, './img/');
+
 }
 
 function handleLoadComplete() {
@@ -226,10 +228,12 @@ function tick(event) {
     var deltaS = event.delta / 1000;
     var position = cat.x + 150 * deltaS;
 
-        if (remainTime <= createjs.Ticker.getTime()) {
-            handleGameOver();
-            return;
-        }
+
+    if (remainTime <= createjs.Ticker.getTime()) {
+        handleGameOver();
+        return;
+    }
+
 
     timeText.text = '剩余时间: ' + Math.floor((remainTime - createjs.Ticker.getTime()) / 1000);
 

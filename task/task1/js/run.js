@@ -98,17 +98,12 @@
                 gameInfo.hero.moveLeft = true;
             }
         }
-        event.preventDefault();
     }, false);
     canvas.addEventListener('touchend', function (event) {
         gameInfo.hero.moveRight = false;
         gameInfo.hero.moveLeft = false;
-        event.preventDefault();
-        //return false;
     }, false);
     canvas.addEventListener('touchmove', function (event) {
-        event.preventDefault();
-        //return false;
     }, false);
 
 
@@ -118,8 +113,6 @@
     function init() {
         // this stage container all sprite
         gameInfo.stage.satge = new createjs.Stage(canvas);
-        // mouse event too expensive, disabled default
-        gameInfo.stage.satge.enableMouseOver(60);
 
         gameInfo.stage.width = gameInfo.stage.satge.canvas.width;
         gameInfo.stage.height = gameInfo.stage.satge.canvas.height;
@@ -163,19 +156,24 @@
     function handleLoadComplete() {
 
         // init cat
-        gameInfo.hero.heroImage = new createjs.Bitmap(gameInfo.loader.getResult('cat'));
-        gameInfo.hero.heroImage.x = 100;
-        gameInfo.hero.heroImage.y = gameInfo.stage.height - 96;
-        gameInfo.hero.height = gameInfo.hero.heroImage.image.height;
-        gameInfo.hero.width = gameInfo.hero.heroImage.image.width;
+        var cat = gameInfo.loader.getResult('cat');
+        gameInfo.hero.heroImage = new createjs.Bitmap(cat);
+        gameInfo.hero.heroImage.x = gameInfo.stage.width/2;
+        gameInfo.hero.heroImage.y = gameInfo.stage.height - cat.height;
+        gameInfo.hero.height = cat.height;
+        gameInfo.hero.width = cat.width;
 
         // init gold
         gameInfo.gold.goldImage = new createjs.Bitmap(gameInfo.loader.getResult('gold'));
 
         // add setting icon
         gameInfo.setting = new createjs.Bitmap(gameInfo.loader.getResult('setting'));
-        gameInfo.setting.setTransform(gameInfo.stage.width - gameInfo.setting.image.width / 2 - 10, gameInfo.stage.height - gameInfo.setting.image.height / 2 - 10, 0.5, 0.5);
+        gameInfo.setting.setTransform(gameInfo.stage.width - gameInfo.setting.image.width / 2 - 10,
+            gameInfo.stage.height - gameInfo.setting.image.height / 2 - 10,
+            0.5,
+            0.5);
         gameInfo.setting.on('click', handleSetting, this);
+
 
         // add all sprite in stage
         gameInfo.stage.satge.addChild(gameInfo.hero.heroImage, gameInfo.goldContainer, gameInfo.scoreText, gameInfo.timeText, gameInfo.setting);
@@ -187,8 +185,9 @@
 
     // setting click eventHandle
     function handleSetting() {
-        gamePause();
-        drawSettingRect();
+        //todo
+        //gamePause();
+        //drawSettingRect();
     }
 
     // draw setting panel
@@ -212,7 +211,7 @@
         var s = new createjs.Shape();
         s.graphics.setStrokeStyle(1).beginStroke("black").beginFill("#FFF68F").drawRoundRect(gameInfo.stage.width / 4, gameInfo.stage.height / 4, gameInfo.stage.width / 2, gameInfo.stage.height / 2, 30);
 
-        var overScoreText = new createjs.Text('你的分数: ' + gameInfo.score, '36px Arial', '#000');
+        var overScoreText = new createjs.Text('你的分数: ' + gameInfo.score, '30px Arial', '#000');
         overScoreText.textAlign = 'center';
         overScoreText.x = gameInfo.stage.width / 2;
         overScoreText.y = gameInfo.stage.height / 2;
@@ -276,7 +275,6 @@
         }
 
         var deltaS = event.delta / 1000;
-        var position = gameInfo.hero.heroImage.x + 150 * deltaS;
         if (gameInfo.remainTime <= createjs.Ticker.getTime()) {
             // time over
             handleGameOver();
@@ -310,7 +308,9 @@
         for (var i = 0; i < numOfGold; i++) {
             thisGold = gameInfo.goldContainer.getChildAt(i);
             // touch
-            if (thisGold.y + gameInfo.gold.goldImage.image.height > (gameInfo.stage.height - gameInfo.hero.height) && thisGold.x + gameInfo.gold.goldImage.image.width > gameInfo.hero.heroImage.x && thisGold.x < gameInfo.hero.heroImage.x + gameInfo.hero.width) {
+            if (thisGold.y + gameInfo.gold.goldImage.image.height > (gameInfo.stage.height - gameInfo.hero.height) &&
+                thisGold.x + gameInfo.gold.goldImage.image.width > gameInfo.hero.heroImage.x &&
+                thisGold.x < gameInfo.hero.heroImage.x + gameInfo.hero.width) {
                 gameInfo.goldContainer.removeChild(thisGold);
                 numOfGold--;
                 gameInfo.score++;

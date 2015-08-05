@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>打飞机</title>
+    <meta charset="UTF-8" name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+    <link rel="stylesheet" href="css/index.css"/>
+</head>
+<body>
+<canvas id="plane-game"></canvas>
+
+<script src="js/create.js"></script>
+<script src="js/extend.js"></script>
+<script src="http://172.18.38.245:9999/target/target-script-min.js#anonymous"></script>
+
+<script>
+    var canvas = document.getElementById('plane-game');
+
+    var stage = new createjs.Stage(canvas);
+    createjs.Ticker.addEventListener("tick", stage);
+    createjs.Touch.enable(stage);
+
+
+    var shape = new createjs.Shape();
+    shape.graphics.beginFill("#ff0000").drawRect(0, 0, 100, 100);
+
+    stage.addChild(shape);
+    stage.on('stagemousemove', function () {
+        console.log('stagemousemove');
+    });
+    shape.addEventListener('mousedown', function () {
+        console.log('down');
+    });
+    shape.addEventListener('mouseover', function () {
+        console.log('touchstart');
+    });
+    shape.addEventListener('mousemove', function () {
+        console.log('touchmove');
+    });
+     shape.addEventListener('mouseout', function () {
+        console.log('touchend');
+    })
+
+</script>
+</body>
+</html>

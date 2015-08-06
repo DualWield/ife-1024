@@ -8,7 +8,7 @@ define(function (require) {
             this.entities = entities;
 
             this.speed = 5;
-            this.interval = 5;
+            this.interval = 30;
             this.current = 0;
             this.bullets = [];
 
@@ -23,20 +23,21 @@ define(function (require) {
                 }));
                 this.current = 0;
             }
+            // 将无用的bullet移除数组
+            this.removeOlderBullets();
             this.bullets.forEach(function (bullet) {
                 bullet.update();
             });
-            // 将无用的bullet移除数组
-            this.removeOlderBullets();
+
         }
 
         removeOlderBullets() {
-           /* this.bullets = this.bullets.filter(function (bullet) {
-                if (bullet.x < WIDTH && bullet.x > 0 ||
-                    bullet.y < HEIGHT && bullet.y > 0) {
+            this.bullets = this.bullets.filter(function (bullet) {
+                if (bullet.x < WIDTH && bullet.x > 0 &&
+                    bullet.y < HEIGHT && bullet.y > 0 && !bullet.remove) {
                     return true;
                 }
-            });*/
+            });
         }
 
         render() {

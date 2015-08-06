@@ -71,7 +71,7 @@ define(function (require) {
         }, {
             key: 'onchangePlane',
             value: function onchangePlane(obj) {
-                this.entities.plane.updatePosition(obj.x, obj.y);
+                this.entities.planeManger.updatePosition(obj.x, obj.y);
             }
         }, {
             key: 'loop',

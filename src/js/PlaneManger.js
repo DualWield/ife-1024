@@ -20,7 +20,6 @@ define(function (require) {
         render () {
             let x = this.x, y = this.y, r = this.r;
             let ctx = planeCanvas.getContext('2d');
-            //console.log(x, y);
             ctx.save();
             ctx.beginPath();
             ctx.arc(x + 5, y + 5, r, 0, Math.PI * 2, true);

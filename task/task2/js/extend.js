@@ -54,16 +54,34 @@
     createjs.Button = createjs.promote(Button, "Container");
 
 
-    function Bullet (obj) {
+    function Enemy (obj) {
         this.Container_constructor();
-        this.x = obj.x;
-        this.y = obj.y;
+
+        for (var i in obj) {
+            this[i] = obj[i];
+        }
 
         this.setup();
     }
-    var bullet = createjs.extend(Bullet, createjs.Container);
-    bullet.setup = function () {
-        
-    }
+    var enemy = createjs.extend(Enemy, createjs.Container);
+    enemy.setup = function () {
+        var img = new createjs.Bitmap(this.result);
+
+        img.scaleX = this.width /img.getBounds().width;
+        img.scaleY = this.height / img.getBounds().height;
+
+        /*var hit = new createjs.Shape();
+        hit.graphics.beginFill("#000").drawRect(img.x,
+            img.y, this.width, this.height);*/
+        this.hitArea = img;
+
+
+        this.addChild(img);
+
+
+    };
+
+    createjs.Enemy = createjs.promote(Enemy, "Container");
+
 
 })(window, createjs);

@@ -121,7 +121,9 @@
             createjs.Ticker.setPaused(true);
 
             // save last Max Score
+            //localStorage.setItem('MaxScore', 0);
             this.lastMaxScore = localStorage.getItem('MaxScore') || 0;
+            //alert(this.lastMaxScore);
             this.loader = new createjs.LoadQueue();
             this.loader.addEventListener('complete', this.handleLoadComplete.bind(this));
             this.loader.loadManifest(this.config.manifest, true, './img/');
@@ -360,6 +362,7 @@
             this.startContainer.visible = false;
             this.gameContainer.visible = false;
             this.overContainer.visible = true;
+            this.lastMaxScore = this.maxScore;
             localStorage.setItem('MaxScore', this.maxScore);
             createjs.Ticker.setPaused(true);
 

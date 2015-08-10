@@ -8,7 +8,12 @@
         hpContainer,
         plane,
         overContainer,
-        bgContainer;
+        bgContainer,
+        particleContainer;
+    window.enemyContainer = enemyContainer;
+    window.particleContainer = particleContainer;
+    window.bulletContainer = bulletContainer;
+
     var randomBG = Math.round(Math.random() * 4);
     var gameManager = {
         config: {
@@ -171,6 +176,10 @@
                     enemy.move();
                 }.bind(this));
 
+                particleContainer.children.forEach(function (particle) {
+                    particle.update();
+                });
+
                 this.checkCollision();
 
                 this.updateHP();
@@ -212,6 +221,17 @@
             enemyContainer.addChild(enemy);
 
         },
+        addParticle: function (obj) {
+            for (var n = 0; n < 10; n += 1) {
+                particleContainer.addChild(new createjs.Particle(
+                    obj.x,
+                    obj.y,
+                    2,
+                    // random opacity to spice it up a bit
+                    'rgba(255,255,255,' + Math.random() + ')'
+                ));
+            }
+        },
         checkCollision: function () {
             var bullet, enemy, i, l, j, len;
             // check out of screen
@@ -228,6 +248,12 @@
                     enemy.isRemove = true;
                 }
             }
+            // check out of screen
+            particleContainer.children.forEach(function (particle) {
+                if (particle.y < 0 || particle.y > canvas.height || particle.x < 0 || particle.y > canvas.width) {
+                    particle.isRemove = true;
+                }
+            });
             // check bullet hit enemy
             for (i = 0 , l = bulletContainer.getNumChildren(); i < l; i++) {
                 for (j = 0, len = enemyContainer.getNumChildren(); j < len; j++) {
@@ -243,6 +269,7 @@
                         if (enemy.hp <= 0) {
                             enemy.isRemove = true;
                             this.score += enemy.score;
+                            this.addParticle({x: enemy.x, y: enemy.y});
                         }
                         bullet.isRemove = true;
                     }
@@ -263,15 +290,19 @@
                     // hit
                     this.currentHP--;
                     enemy.isRemove = true;
+                    this.addParticle({x: enemy.x, y: enemy.y});
                 }
             }
+
             enemyContainer.children = enemyContainer.children.filter(function (enemy) {
                 return !enemy.isRemove
             });
             bulletContainer.children = bulletContainer.children.filter(function (bullet) {
                 return !bullet.isRemove
             });
-
+            particleContainer.children = particleContainer.children.filter(function (particle) {
+                return !particle.isRemove
+            });
         },
         initFPS: function () {
             var fps = this.fps =  new createjs.Text('FPS:' + createjs.Ticker.getMeasuredFPS());
@@ -335,7 +366,6 @@
 
             // bg
             bgContainer = new createjs.Container();
-
             var bgResult = this.loader.getResult('bg' + randomBG);
             var bg1 = new createjs.Bitmap(bgResult);
             var bg2 = new createjs.Bitmap(bgResult);
@@ -344,6 +374,9 @@
             bg2.scaleY = bg1.scaleY = canvas.height / bg1.getBounds().height;
             bg2.y = -canvas.height;
             bgContainer.addChild(bg1, bg2);
+
+            // particle
+            particleContainer = new createjs.Container();
 
             if (window.DeviceOrientationEvent) {
                 // if support device orientation
@@ -357,7 +390,7 @@
             bulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
+            gameContainer.addChild(bgContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer, particleContainer);
 
             this.updateHP();
             this.stage.addChildAt(gameContainer, 0);

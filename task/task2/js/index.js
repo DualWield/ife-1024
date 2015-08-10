@@ -10,10 +10,21 @@
         overContainer,
         bgContainer,
         particleContainer;
-    window.enemyContainer = enemyContainer;
-    window.particleContainer = particleContainer;
-    window.bulletContainer = bulletContainer;
-
+    function isMobile() {
+        if( navigator.userAgent.match(/Android/i)
+            || navigator.userAgent.match(/webOS/i)
+            || navigator.userAgent.match(/iPhone/i)
+            || navigator.userAgent.match(/iPad/i)
+            || navigator.userAgent.match(/iPod/i)
+            || navigator.userAgent.match(/BlackBerry/i)
+            || navigator.userAgent.match(/Windows Phone/i)
+        ){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     var randomBG = Math.round(Math.random() * 4);
     var gameManager = {
         config: {
@@ -378,14 +389,13 @@
             // particle
             particleContainer = new createjs.Container();
 
-            if (window.DeviceOrientationEvent) {
+            if (window.DeviceOrientationEvent && isMobile()) {
                 // if support device orientation
               window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
             }else {
                 // if not support device orientation, use touch move
                 this.stage.addEventListener('stagemousemove', this.handlePlaneTouchMove.bind(this));
             }
-            this.stage.addEventListener('stagemousemove', this.handlePlaneTouchMove.bind(this));
 
             bulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();

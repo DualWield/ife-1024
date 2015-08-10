@@ -83,5 +83,66 @@
 
     createjs.Enemy = createjs.promote(Enemy, "Container");
 
+    function Particle (x, y, r, col) {
+        this.Container_constructor();
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.col = col;
+        this.setup();
+    }
+    var particle = createjs.extend(Particle, createjs.Container);
+    particle.setup = function () {
+
+
+        // determines whether particle will travel to the right of left
+        // 50% chance of either happening
+        this.dir = (Math.random() * 2 > 1) ? 1 : -1;
+
+        // random values so particles do no travel at the same speeds
+        this.vx = Math.random() * 4 * this.dir;
+        this.vy = Math.random() * 7;
+        this.speed = Math.random();
+
+        this.isRemove = false;
+
+        var g = new createjs.Graphics();
+        g.setStrokeStyle(1);
+        g.beginStroke(createjs.Graphics.getRGB(0,0,0));
+        g.beginFill(createjs.Graphics.getRGB(255,0,0));
+        g.drawCircle(0,0,3);
+
+        var s = new createjs.Shape(g);
+        s.x = 0;
+        s.y = 0;
+        this.addChild(s);
+
+        this.update = function() {
+            // update coordinates
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // increase velocity so particle accelerates off screen
+            this.vx *= 1.1;
+            this.vy *= 1.1;
+
+            // adding this negative amount to the
+            // y velocity exerts an upward pull on
+            // the particle, as if drawn to the
+            // surface
+            this.vy -= this.speed;
+
+            // offscreen
+            if (this.y < 0) {
+                this.isRemove = true;
+            }
+        };
+
+        this.render = function() {
+            //Draw.circle(this.x, this.y, this.r, this.col);
+        };
+
+    };
+    createjs.Particle = createjs.promote(Particle, "Container");
 
 })(window, createjs);

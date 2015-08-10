@@ -7,8 +7,9 @@
         bulletContainer,
         hpContainer,
         plane,
-        overContainer;
-
+        overContainer,
+        bgContainer;
+    var randomBG = Math.round(Math.random() * 4);
     var gameManager = {
         config: {
             manifest: [
@@ -29,12 +30,8 @@
                     id: 'bullet'
                 },
                 {
-                    src: 'bg1.jpg',
-                    id: 'bg1'
-                },
-                {
-                    src: 'bg2.png',
-                    id: 'bg2'
+                    src: 'bg' + randomBG + '.jpg',
+                    id: 'bg' + randomBG
                 },
                 {
                     src: 'hp.png',
@@ -73,42 +70,54 @@
             enemy: [
                 {
                     id: 'enemy1',
-                    speed: 1,
+                    speed: 6,
                     hp: 1,
                     width: 70,
                     height: 65,
-                    interval: 50,
+                    interval: 120,
+                    minInterval: 80,
                     score: 10,
-                    currentInterval: 50,
                     tick: function (that) {
+                        if (this.currentInterval == null) {
+                            this.currentInterval = this.interval;
+                        }
                         this.currentInterval--;
                         if(this.currentInterval <= 0) {
                             that.addEnemy(this);
-                            this.currentInterval = this.interval;
+                            this.currentInterval = this.interval = Math.max(this.interval - that.score/10, this.minInterval);
                         }
-                        this.move(that);
+                        //this.move(that);
                     },
                     move: function (that) {
-                        for (var i = 0 ,l = enemyContainer.getNumChildren(); i < l; i++ ){
-                            var enemy = enemyContainer.getChildAt(i);
-                            enemy.y += this.speed;
-                        }
+                        this.y += this.speed;
+
                     }
-                }/*,
+                },
                 {
                     id: 'enemy2',
-                    speed: 20,
+                    width: 70,
+                    height: 65,
+                    score: 20,
+                    speed: 3,
                     hp: 3,
-                    interval: 10,
-                    currentInterval: 10,
+                    interval: 200,
+                    minInterval: 100,
                     tick: function (that) {
+                        if (this.currentInterval == null) {
+                            this.currentInterval = this.interval;
+                        }
                         this.currentInterval--;
                         if(this.currentInterval <= 0) {
                             that.addEnemy(this);
-                            this.currentInterval = this.interval;
+                            this.currentInterval = this.interval = Math.max(this.interval - that.score/10, this.minInterval);
                         }
+                        //this.move(that);
+
+                    },
+                    move: function (that) {
+                        this.y += this.speed;
                     }
-                }*/
+                }
             ]
 
         },
@@ -133,9 +142,8 @@
 
             this.stage = new createjs.Stage(canvas);
             createjs.Touch.enable(this.stage);
-            createjs.Ticker.setFPS(200);
-            createjs.Ticker.timingMode = createjs.Ticker.RAF;
-
+            createjs.Ticker.setFPS(80);
+            createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
             //this.stage.enableMouseOver(60);
             createjs.Ticker.addEventListener("tick", this.tick.bind(this));
 
@@ -148,21 +156,27 @@
             this.overContainer.visible = false;
         },
         tick: function (event) {
-            // call bullet tick
 
             if (createjs.Ticker.getPaused()) {
 
             }else {
+
                 this.config.bullet.tick(this);
 
                 this.config.enemy.forEach(function (enemy) {
                     enemy.tick(this);
                 }.bind(this));
+
+                enemyContainer.children.forEach(function (enemy) {
+                    enemy.move();
+                }.bind(this));
+
                 this.checkCollision();
 
                 this.updateHP();
                 this.updateFPS();
                 this.updateScore();
+                this.updateBG();
             }
 
 
@@ -187,7 +201,11 @@
                 width: obj.width,
                 height: obj.height,
                 result: enemyResult,
-                score: obj.score
+                score: obj.score,
+                hp: obj.hp,
+                tick: obj.tick,
+                move: obj.move,
+                speed: obj.speed
             });
 
 
@@ -221,9 +239,12 @@
                     var realY = enemy.globalToLocal(x,y).y;
                     if (enemy.hitTest(realX, realY)) {
                         // hit
-                        this.score += enemy.score;
+                        enemy.hp--;
+                        if (enemy.hp <= 0) {
+                            enemy.isRemove = true;
+                            this.score += enemy.score;
+                        }
                         bullet.isRemove = true;
-                        enemy.isRemove = true;
                     }
 
                 }
@@ -267,6 +288,12 @@
         updateFPS: function () {
             this.fps.text = 'FPS:' + createjs.Ticker.getMeasuredFPS();
         },
+        updateBG: function () {
+            if (bgContainer.y >= canvas.height) {
+                bgContainer.y = 0;
+            }
+            bgContainer.y += 1;
+        },
         initStart: function () {
             var startContainer = this.startContainer = new createjs.Container();
             var startBackground = new createjs.Shape();
@@ -307,27 +334,50 @@
             plane.y = canvas.height - this.config.plane.height - 50;
 
             // bg
-            var bgResult = this.loader.getResult('bg2');
-            var bg = new createjs.Bitmap(bgResult);
-            bg.x = bg.y = 0;
-            bg.scaleX = canvas.width / bg.getBounds().width;
-            bg.scaleY = canvas.height / bg.getBounds().height;
+            bgContainer = new createjs.Container();
 
+            var bgResult = this.loader.getResult('bg' + randomBG);
+            var bg1 = new createjs.Bitmap(bgResult);
+            var bg2 = new createjs.Bitmap(bgResult);
+            bg1.x = bg1.y = bg2.x = 0;
+            bg2.scaleX = bg1.scaleX = canvas.width / bg1.getBounds().width;
+            bg2.scaleY = bg1.scaleY = canvas.height / bg1.getBounds().height;
+            bg2.y = -canvas.height;
+            bgContainer.addChild(bg1, bg2);
+
+            if (window.DeviceOrientationEvent) {
+                // if support device orientation
+              window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
+            }else {
+                // if not support device orientation, use touch move
+                this.stage.addEventListener('stagemousemove', this.handlePlaneTouchMove.bind(this));
+            }
             this.stage.addEventListener('stagemousemove', this.handlePlaneTouchMove.bind(this));
 
             bulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bg, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
+            gameContainer.addChild(bgContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
 
             this.updateHP();
             this.stage.addChildAt(gameContainer, 0);
 
         },
+        handleDeviceOrientation: function (event) {
+            var factor = 0.6;
+            var betaDirection = Math.round(event.beta* factor);
+            var gammaDirection = Math.round(event.gamma* factor);
+            var x = (plane.x + gammaDirection);
+            var y = (plane.y + betaDirection);
+            this.updatePlane({
+                x: x,
+                y: y
+            });
+        },
         handlePlaneTouchMove: function (e) {
             var point = {
-                x: e.localX,
-                y: e.localY
+                x: e.localX - this.config.plane.width/2,
+                y: e.localY - this.config.plane.height/2
             };
 
             this.updatePlane(point);
@@ -377,7 +427,7 @@
                 hp.x = i * 30;
                 hpContainer.addChild(hp);
             }
-            if (this.currentHP === 0) {
+            if (this.currentHP <= 0) {
                 this.gameOver();
                 return false;
             }
@@ -385,8 +435,13 @@
             hpContainer.y = this.config.margin;
         },
         updatePlane: function (point) {
-            plane.x = point.x - this.config.plane.width/2;
-            plane.y = point.y - this.config.plane.height/2;
+            point.x = Math.min(point.x, canvas.width - this.config.plane.width);
+            point.x = Math.max(point.x, 0);
+            point.y = Math.min(point.y, canvas.height - this.config.plane.height);
+            point.y = Math.max(point.y, 0);
+
+            plane.x = point.x;
+            plane.y = point.y;
         }
     };
 

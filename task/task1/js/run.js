@@ -16,18 +16,18 @@
         heroSpeed: 10,
         goldSpeed: 5,
         margin: 32,
-        manifest: null
+        manifest: undefined
     };
 
     var gameInfo = {
         stage: {
-            stage: null,
+            stage: undefined,
             width: 0,
             height: 0
         },
         // may change role image later
         hero: {
-            heroImage: null,
+            heroImage: undefined,
             height: 0,
             width: 0,
             moveLeft: false,
@@ -35,26 +35,26 @@
             heroSpeed: params.heroSpeed
         },
         gold: {
-            goldImage: null,
+            goldImage: undefined,
             goldSpeed: params.goldSpeed
         },
 
-        setting: null,
+        setting: undefined,
         score: 0,
         start: true,
         // text
-        timeText: null,
-        scoreText: null,
+        timeText: undefined,
+        scoreText: undefined,
 
         remainTime: params.timeSet * 1000,
 
         // containers
-        goldContainer: null,
-        overContainer: null,
-        settingContainer: null,
+        goldContainer: undefined,
+        overContainer: undefined,
+        settingContainer: undefined,
 
         // loader
-        loader: null,
+        loader: undefined,
 
         resetRamainTime: function () {
             this.remainTime = params.timeSet * 1000;

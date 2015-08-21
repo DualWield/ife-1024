@@ -10,21 +10,23 @@
         overContainer,
         bgContainer,
         particleContainer;
+
     function isMobile() {
-        if( navigator.userAgent.match(/Android/i)
+        if (navigator.userAgent.match(/Android/i)
             || navigator.userAgent.match(/webOS/i)
             || navigator.userAgent.match(/iPhone/i)
             || navigator.userAgent.match(/iPad/i)
             || navigator.userAgent.match(/iPod/i)
             || navigator.userAgent.match(/BlackBerry/i)
             || navigator.userAgent.match(/Windows Phone/i)
-        ){
+        ) {
             return true;
         }
         else {
             return false;
         }
     }
+
     var randomBG = Math.round(Math.random() * 4);
     var gameManager = {
         config: {
@@ -69,7 +71,7 @@
                 height: 30,
                 tick: function (that) {
                     this.currentInterval--;
-                    if(this.currentInterval <= 0) {
+                    if (this.currentInterval <= 0) {
                         that.addBullet(this);
                         this.currentInterval = this.interval;
                     }
@@ -77,7 +79,7 @@
                 },
                 move: function (that) {
                     // move bullet
-                    for (var i = 0 ; i < bulletContainer.getNumChildren(); i++ ){
+                    for (var i = 0; i < bulletContainer.getNumChildren(); i++) {
                         var bullet = bulletContainer.getChildAt(i);
                         bullet.y -= this.speed;
                     }
@@ -98,9 +100,9 @@
                             this.currentInterval = this.interval;
                         }
                         this.currentInterval--;
-                        if(this.currentInterval <= 0) {
+                        if (this.currentInterval <= 0) {
                             that.addEnemy(this);
-                            this.currentInterval = this.interval = Math.max(this.interval - that.score/10, this.minInterval);
+                            this.currentInterval = this.interval = Math.max(this.interval - that.score / 10, this.minInterval);
                         }
                         //this.move(that);
                     },
@@ -123,9 +125,9 @@
                             this.currentInterval = this.interval;
                         }
                         this.currentInterval--;
-                        if(this.currentInterval <= 0) {
+                        if (this.currentInterval <= 0) {
                             that.addEnemy(this);
-                            this.currentInterval = this.interval = Math.max(this.interval - that.score/10, this.minInterval);
+                            this.currentInterval = this.interval = Math.max(this.interval - that.score / 10, this.minInterval);
                         }
                         //this.move(that);
 
@@ -175,7 +177,7 @@
 
             if (createjs.Ticker.getPaused()) {
 
-            }else {
+            } else {
 
                 this.config.bullet.tick(this);
 
@@ -209,7 +211,7 @@
             var bullet = new createjs.Bitmap(bulletResult);
             bullet.x = this.plane.x + this.config.plane.width / 2 - bullet.getTransformedBounds().width / 2;
             bullet.y = this.plane.y - bullet.getTransformedBounds().height / 2;
-            bullet.scaleX = obj.width /bullet.getBounds().width;
+            bullet.scaleX = obj.width / bullet.getBounds().width;
             bullet.scaleY = obj.height / bullet.getBounds().height;
             bulletContainer.addChild(bullet);
         },
@@ -246,16 +248,16 @@
         checkCollision: function () {
             var bullet, enemy, i, l, j, len;
             // check out of screen
-            for (i = 0 ; i < bulletContainer.getNumChildren(); i++ ){
+            for (i = 0; i < bulletContainer.getNumChildren(); i++) {
                 bullet = bulletContainer.getChildAt(i);
-                if(bullet.y < 0) {
+                if (bullet.y < 0) {
                     bullet.isRemove = true;
                 }
             }
             // check out of screen
-            for (i = 0; i < enemyContainer.getNumChildren() ; i++) {
+            for (i = 0; i < enemyContainer.getNumChildren(); i++) {
                 enemy = enemyContainer.getChildAt(i);
-                if(enemy.y < 0 || enemy.y > canvas.height) {
+                if (enemy.y < 0 || enemy.y > canvas.height) {
                     enemy.isRemove = true;
                 }
             }
@@ -272,8 +274,8 @@
                     enemy = enemyContainer.getChildAt(j);
                     var x = bullet.x - bullet.getTransformedBounds().width / 2;
                     var y = bullet.y;
-                    var realX = enemy.globalToLocal(x,y).x;
-                    var realY = enemy.globalToLocal(x,y).y;
+                    var realX = enemy.globalToLocal(x, y).x;
+                    var realY = enemy.globalToLocal(x, y).y;
                     if (enemy.hitTest(realX, realY)) {
                         // hit
                         enemy.hp--;
@@ -289,14 +291,14 @@
             }
             // check plane hit enemy
             l = enemyContainer.getNumChildren();
-            for (i = 0; i < l ;i++) {
+            for (i = 0; i < l; i++) {
                 enemy = enemyContainer.getChildAt(i);
-                var rect1 = plane.getTransformedBounds();
-                var rect2 = enemy.getTransformedBounds();
-                if (rect1.x > rect2.x + rect2.width ||
-                    rect1.y > rect2.y + rect2.height ||
-                    rect2.x > rect1.x + rect1.width ||
-                    rect2.y > rect1.y + rect1.height) {
+                var planeRect = plane.getTransformedBounds();
+                var enemyRect = enemy.getTransformedBounds();
+                if (planeRect.x > enemyRect.x + enemyRect.width ||
+                    planeRect.y > enemyRect.y + enemyRect.height ||
+                    enemyRect.x > planeRect.x + planeRect.width ||
+                    enemyRect.y > planeRect.y + planeRect.height) {
                 } else {
                     // hit
                     this.currentHP--;
@@ -316,7 +318,7 @@
             });
         },
         initFPS: function () {
-            var fps = this.fps =  new createjs.Text('FPS:' + createjs.Ticker.getMeasuredFPS());
+            var fps = this.fps = new createjs.Text('FPS:' + createjs.Ticker.getMeasuredFPS());
             fps.x = canvas.width - fps.getMeasuredWidth() - 10;
             fps.y = canvas.height - fps.getMeasuredHeight() - 10;
 
@@ -346,7 +348,7 @@
                 .drawRoundRect(0, 0, canvas.width, canvas.height);
 
             var startButton = new createjs.Button('Start Game');
-            startButton.x = canvas.width / 2 - startButton.getBounds().width/2;
+            startButton.x = canvas.width / 2 - startButton.getBounds().width / 2;
             startButton.y = canvas.height / 2;
             startButton.on('click', this.startGame.bind(this));
             startContainer.addChild(startBackground, startButton);
@@ -360,7 +362,7 @@
             hit.graphics.beginFill("#000").drawRect(0, 0, canvas.width, canvas.height);
             gameContainer.hitArea = hit;
             gameContainer.visible = true;
-            var score = this.scoreText =  new createjs.Text('Score: ' + this.score, '20px Arial');
+            var score = this.scoreText = new createjs.Text('Score: ' + this.score, '20px Arial');
             score.x = this.config.margin;
             score.y = this.config.margin;
             var maxScore = this.maxScoreText = new createjs.Text('Max Score: ' + this.maxScore, '20px Arial');
@@ -391,8 +393,8 @@
 
             if (window.DeviceOrientationEvent && isMobile()) {
                 // if support device orientation
-              window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
-            }else {
+                window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
+            } else {
                 // if not support device orientation, use touch move
                 this.stage.addEventListener('stagemousemove', this.handlePlaneTouchMove.bind(this));
             }
@@ -408,8 +410,8 @@
         },
         handleDeviceOrientation: function (event) {
             var factor = 0.6;
-            var betaDirection = Math.round(event.beta* factor);
-            var gammaDirection = Math.round(event.gamma* factor);
+            var betaDirection = Math.round(event.beta * factor);
+            var gammaDirection = Math.round(event.gamma * factor);
             var x = (plane.x + gammaDirection);
             var y = (plane.y + betaDirection);
             this.updatePlane({
@@ -419,8 +421,8 @@
         },
         handlePlaneTouchMove: function (e) {
             var point = {
-                x: e.localX - this.config.plane.width/2,
-                y: e.localY - this.config.plane.height/2
+                x: e.localX - this.config.plane.width / 2,
+                y: e.localY - this.config.plane.height / 2
             };
 
             this.updatePlane(point);
@@ -429,7 +431,7 @@
         initOver: function () {
             overContainer = this.overContainer = new createjs.Container();
             var restartButton = new createjs.Button('Restart Game');
-            restartButton.x = canvas.width / 2 - restartButton.getBounds().width/2;
+            restartButton.x = canvas.width / 2 - restartButton.getBounds().width / 2;
             restartButton.y = canvas.height / 2;
             restartButton.on('click', this.restartGame.bind(this));
 
@@ -462,7 +464,7 @@
         },
         updateHP: function () {
             hpContainer.removeAllChildren();
-            for (var i = 0 , len = this.currentHP; i < len ; i++) {
+            for (var i = 0, len = this.currentHP; i < len; i++) {
                 var hpResult = this.loader.getResult('hp');
                 var hp = new createjs.Bitmap(hpResult);
                 hp.scaleX = 0.1;
@@ -487,8 +489,6 @@
             plane.y = point.y;
         }
     };
-
-
 
 
     window.onload = gameManager.init.bind(gameManager);

@@ -13,21 +13,23 @@
     var params = {
         timeSet: 6,
         maxGolds: 8,
+        maxBombs: 1,
         heroSpeed: 10,
         goldSpeed: 5,
+        bombSpeed: 5,
         margin: 32,
-        manifest: null
+        manifest: undefined
     };
 
     var gameInfo = {
         stage: {
-            stage: null,
+            stage: undefined,
             width: 0,
             height: 0
         },
         // may change role image later
         hero: {
-            heroImage: null,
+            heroImage: undefined,
             height: 0,
             width: 0,
             moveLeft: false,
@@ -35,26 +37,31 @@
             heroSpeed: params.heroSpeed
         },
         gold: {
-            goldImage: null,
+            goldImage: undefined,
             goldSpeed: params.goldSpeed
         },
+        bomb: {
+            bombImage: undefined,
+            bombSpeed: params.bombSpeed
+        },
 
-        setting: null,
+        setting: undefined,
         score: 0,
         start: true,
         // text
-        timeText: null,
-        scoreText: null,
+        timeText: undefined,
+        scoreText: undefined,
 
         remainTime: params.timeSet * 1000,
 
         // containers
-        goldContainer: null,
-        overContainer: null,
-        settingContainer: null,
+        goldContainer: undefined,
+        bombContainer: undefined,
+        overContainer: undefined,
+        settingContainer: undefined,
 
         // loader
-        loader: null,
+        loader: undefined,
 
         resetRamainTime: function () {
             this.remainTime = params.timeSet * 1000;
@@ -128,6 +135,10 @@
                 id: 'gold'
             },
             {
+                src: 'bomb.png',
+                id: 'bomb'
+            },
+            {
                 src: 'setting.png',
                 id: 'setting'
             }
@@ -136,6 +147,7 @@
         // all gold push in this container
         var fontSize = '30px';
         gameInfo.goldContainer = new createjs.Container();
+        gameInfo.bombContainer = new createjs.Container();
         gameInfo.scoreText = new createjs.Text('分数: 0', fontSize + ' Arial', '#fff');
         gameInfo.scoreText.x = params.margin;
         gameInfo.scoreText.y = params.margin;
@@ -166,6 +178,9 @@
         // init gold
         gameInfo.gold.goldImage = new createjs.Bitmap(gameInfo.loader.getResult('gold'));
 
+        // init bomb
+        gameInfo.bomb.bombImage = new createjs.Bitmap(gameInfo.loader.getResult('bomb'));
+
         // add setting icon
         gameInfo.setting = new createjs.Bitmap(gameInfo.loader.getResult('setting'));
         gameInfo.setting.setTransform(gameInfo.stage.width - gameInfo.setting.image.width / 2 - 10,
@@ -176,7 +191,7 @@
 
 
         // add all sprite in stage
-        gameInfo.stage.satge.addChild(gameInfo.hero.heroImage, gameInfo.goldContainer, gameInfo.scoreText, gameInfo.timeText, gameInfo.setting);
+        gameInfo.stage.satge.addChild(gameInfo.hero.heroImage, gameInfo.goldContainer, gameInfo.bombContainer, gameInfo.scoreText, gameInfo.timeText, gameInfo.setting);
 
         // add tick
         createjs.Ticker.timingMode = createjs.Ticker.RAF;
@@ -246,6 +261,17 @@
         return newGold;
     }
 
+    // add new bomb
+    // @params {Number} x y   coordinate to the new bomb, for new feature  maybe
+    // return {createjs.Bitmap}
+    function addBomb(x, y) {
+        var newBomb = new createjs.Bitmap(gameInfo.loader.getResult('bomb'));
+        newBomb.y = y || 0;
+        newBomb.x = x || Math.random() * gameInfo.stage.width;
+        gameInfo.bombContainer.addChild(newBomb);
+        return newBomb;
+    }
+
 
     // run when game pause
     function gamePause() {
@@ -261,6 +287,7 @@
         gameInfo.stage.satge.removeChild(gameInfo.overContainer, gameInfo.settingContainer);
         gameInfo.remainTime = createjs.Ticker.getTime() + params.timeSet * 1000;
         gameInfo.goldContainer.removeAllChildren();
+        gameInfo.bombContainer.removeAllChildren();
         gameInfo.scoreText.text = '分数: ' + gameInfo.score;
         gameInfo.stage.satge.update();
     }
@@ -303,6 +330,13 @@
             numOfGold++;
         }
 
+        // add new Bomb if the number less than params.maxBombs
+        var numOfBomb = gameInfo.bombContainer.getNumChildren();
+        if (numOfBomb < params.maxBombs && Math.random() < 0.05) {
+            addBomb();
+            numOfBomb++;
+        }
+
         // move each gold
         var thisGold;
         for (var i = 0; i < numOfGold; i++) {
@@ -324,6 +358,30 @@
             // move down
             else {
                 thisGold.y += gameInfo.gold.goldSpeed;
+            }
+        }
+
+        // move each bomb
+        var thisBomb;
+        for (var i = 0; i < numOfBomb; i++) {
+            thisBomb = gameInfo.bombContainer.getChildAt(i);
+            // touch
+            if (thisBomb.y + gameInfo.bomb.bombImage.image.height > (gameInfo.stage.height - gameInfo.hero.height) &&
+                thisBomb.x + gameInfo.bomb.bombImage.image.width > gameInfo.hero.heroImage.x &&
+                thisBomb.x < gameInfo.hero.heroImage.x + gameInfo.hero.width) {
+                gameInfo.bombContainer.removeChild(thisBomb);
+                numOfBomb--;
+                gameInfo.score--;
+                gameInfo.scoreText.text = '分数: ' + gameInfo.score;
+            }
+            // exceed screen
+            else if (thisBomb.y > gameInfo.stage.height) {
+                gameInfo.bombContainer.removeChild(thisBomb);
+                numOfBomb--;
+            }
+            // move down
+            else {
+                thisBomb.y += gameInfo.bomb.bombSpeed;
             }
         }
 

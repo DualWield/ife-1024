@@ -14,3 +14,9 @@ canvas {
 body {
     overflow: hidden;
 }
+
+.percent {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 21px;
+}

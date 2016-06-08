@@ -153,10 +153,16 @@
             //alert(this.lastMaxScore);
             this.loader = new createjs.LoadQueue();
             this.loader.addEventListener('complete', this.handleLoadComplete.bind(this));
+            this.loader.addEventListener('progress', this.handleProgress.bind(this));
             this.loader.loadManifest(this.config.manifest, true, './img/');
 
+
+        },
+        handleProgress: function (data) {
+            document.querySelector('.percent').innerHTML = (data.loaded * 100).toFixed(0) + '%';
         },
         handleLoadComplete: function () {
+            document.querySelector('.percent').style.display = 'none';
 
             this.stage = new createjs.Stage(canvas);
             createjs.Touch.enable(this.stage);

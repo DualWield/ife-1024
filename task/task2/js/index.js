@@ -78,7 +78,7 @@
                 speed: 6,
                 interval: 15,
                 currentInterval: 15,
-                width: 5,
+                width: 10,
                 height: 30,
                 tick: function (that) {
                     this.currentInterval--;
@@ -101,8 +101,8 @@
                     id: 'enemy1',
                     speed: 60,
                     hp: 1,
-                    width: 70,
-                    height: 65,
+                    width: 90,
+                    height: 85,
                     interval: 120,
                     minInterval: 80,
                     score: 10,
@@ -387,13 +387,14 @@
             bg2.y = -canvas.height;
             bgContainer.addChild(bg1, bg2);
 
+            var bgConstContainer = new createjs.Container();
             for (var i = 1, len = 3; i <= len; i++) {
                 bgResult = this.loader.getResult('bg' + i);
                 var bg = new createjs.Bitmap(bgResult);
                 bg.x = bg.y = 0;
                 bg.scaleX = canvas.width / bg.getBounds().width;
                 bg.scaleY = canvas.height / bg.getBounds().height;
-                this.stage.addChild(bg);
+                bgConstContainer.addChild(bg);
             }
 
 
@@ -410,10 +411,10 @@
             bulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
+            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
 
             this.updateHP();
-            this.stage.addChildAt(gameContainer, 0);
+            this.stage.addChild(gameContainer);
 
         },
         handleDeviceOrientation: function (event) {
@@ -468,24 +469,24 @@
             this.lastMaxScore = this.maxScore;
             localStorage.setItem('MaxScore', this.maxScore);
             createjs.Ticker.setPaused(true);
-
         },
         updateHP: function () {
             hpContainer.removeAllChildren();
             for (var i = 0, len = this.currentHP; i < len; i++) {
                 var hpResult = this.loader.getResult('hp');
                 var hp = new createjs.Bitmap(hpResult);
-                hp.scaleX = 0.1;
-                hp.scaleY = 0.1;
-                hp.x = i * 30;
+                hp.scaleX = hp.scaleY = window.innerWidth / 649;
+                hp.x = i * window.innerWidth / 649 * 62;
                 hpContainer.addChild(hp);
             }
             if (this.currentHP <= 0) {
                 this.gameOver();
                 return false;
             }
-            hpContainer.x = canvas.width - hpContainer.getBounds().width - this.config.margin;
-            hpContainer.y = this.config.margin;
+            // hpContainer.x = canvas.width - hpContainer.getBounds().width - this.config.margin;
+            // hpContainer.y = this.config.margin;
+            hpContainer.x = 285 / 649 * window.innerWidth;
+            hpContainer.y = 19 / 1136 * window.innerHeight;
         },
         updatePlane: function (point) {
             point.x = Math.min(point.x, canvas.width - this.config.plane.width);

@@ -8,7 +8,8 @@
         hpContainer,
         plane,
         overContainer,
-        bgContainer;
+        bgContainer,
+        enemyBulletContainer;
 
     function isMobile() {
         if (navigator.userAgent.match(/Android/i)
@@ -27,16 +28,18 @@
     }
 
     var randomBG = Math.round(Math.random() * 4);
-    var gameManager = {
-        config: {
-            manifest: [
+    var manifest = [
                 {
                     src: 'plane.png',
                     id: 'plane'
                 },
                 {
-                    src: 'enemy1.png',
-                    id: 'enemy1'
+                    src: 'plane_weak.png',
+                    id: 'plane_weak'
+                },
+                {
+                    src: 'enemy.png',
+                    id: 'enemy'
                 },
                 {
                     src: 'enemy2.png',
@@ -65,8 +68,21 @@
                 {
                     src: 'hp.png',
                     id: 'hp'
+                },
+                {
+                    src: 'enemy_bullet.png',
+                    id: 'enemy_bullet'
                 }
-            ],
+            ];
+    for(var i = 1, len = 4; i <= len; i++) {
+        manifest.push({
+            src: 'enemy_boom' + i + '.png',
+            id: 'enemy_boom' + i
+        });
+    }
+    var gameManager = {
+        config: {
+            manifest: manifest,
             margin: 20,
             plane: {
                 attack: 2,
@@ -74,25 +90,30 @@
                 width: 80,
                 height: 80
             },
+            enemyBullet: {
+                speed: 200,
+                width: 16,
+                height: 16
+            },
             bullet: {
-                speed: 6,
+                speed: 300,
                 interval: 15,
                 currentInterval: 15,
                 width: 10,
                 height: 30,
-                tick: function (that) {
+                tick: function (that, event) {
                     this.currentInterval--;
                     if (this.currentInterval <= 0) {
                         that.addBullet(this);
                         this.currentInterval = this.interval;
                     }
-                    this.move(that);
+                    this.move(that, event);
                 },
-                move: function (that) {
+                move: function (that, event) {
                     // move bullet
                     for (var i = 0; i < bulletContainer.getNumChildren(); i++) {
                         var bullet = bulletContainer.getChildAt(i);
-                        bullet.y -= this.speed;
+                        bullet.y -= this.speed * event.delta / 1000;;
                     }
                 }
             },
@@ -122,31 +143,6 @@
                         this.y += this.speed * event.delta / 1000;
 
                     }
-                },
-                {
-                    id: 'enemy2',
-                    width: 70,
-                    height: 65,
-                    score: 20,
-                    speed: 40,
-                    hp: 3,
-                    interval: 200,
-                    minInterval: 100,
-                    tick: function (that) {
-                        if (this.currentInterval == null) {
-                            this.currentInterval = this.interval;
-                        }
-                        this.currentInterval--;
-                        if (this.currentInterval <= 0) {
-                            that.addEnemy(this);
-                            this.currentInterval = this.interval = Math.max(this.interval - that.score / 10, this.minInterval);
-                        }
-                        //this.move(that);
-
-                    },
-                    move: function (event) {
-                        this.y += this.speed * event.delta / 1000;
-                    }
                 }
             ]
 
@@ -156,6 +152,7 @@
         currentHP: undefined,
         currentBullet: 30,
         init: function () {
+
             this.currentHP = this.config.plane.hp;
             createjs.Ticker.setPaused(true);
 
@@ -167,6 +164,7 @@
             this.loader.addEventListener('complete', this.handleLoadComplete.bind(this));
             this.loader.addEventListener('progress', this.handleProgress.bind(this));
             this.loader.loadManifest(this.config.manifest, true, './img/');
+
 
 
         },
@@ -192,7 +190,7 @@
             this.overContainer.visible = false;
         },
         tick: function (event) {
-
+            var that = this;
             if (createjs.Ticker.getPaused()) {
 
             } else {
@@ -204,8 +202,18 @@
                 }.bind(this));
 
                 enemyContainer.children.forEach(function (enemy) {
+                    enemy.tick(event, that);
+                }.bind(this));
+
+                enemyContainer.children.forEach(function (enemy) {
                     enemy.move(event);
                 }.bind(this));
+
+                // move
+                for (var i = 0; i < enemyBulletContainer.getNumChildren(); i++) {
+                    var bullet = enemyBulletContainer.getChildAt(i);
+                    bullet.y += this.config.enemyBullet.speed * event.delta / 1000;
+                }
 
 
 
@@ -232,7 +240,10 @@
             bulletContainer.addChild(bullet);
         },
         addEnemy: function (obj) {
-            var enemyResult = this.loader.getResult(obj.id);
+            var enemyResult = [this.loader.getResult('enemy')];
+            for(var i = 1, len = 4; i <= len; i++) {
+                enemyResult.push(this.loader.getResult('enemy_boom' + i));
+            }
             var enemy = new createjs.Enemy({
                 x: (canvas.width - 70) * Math.random(),
                 y: 0,
@@ -241,51 +252,89 @@
                 result: enemyResult,
                 score: obj.score,
                 hp: obj.hp,
-                tick: obj.tick,
                 move: obj.move,
-                speed: obj.speed
+                speed: obj.speed,
+                interval: 90,
+                currentInterval: 90
             });
 
 
             enemyContainer.addChild(enemy);
 
         },
+        addEnemyBullet: function (enemy, config) {
 
+            var bulletResult = this.loader.getResult('enemy_bullet');
+            var bullet = new createjs.Bitmap(bulletResult);
+            bullet.x = enemy.x + enemy.width / 2 - config.width / 2 - 10;
+            bullet.y = enemy.y + enemy.height - 35;
+            bullet.scaleX = config.width / bullet.getBounds().width;
+            bullet.scaleY = config.height / bullet.getBounds().height;
+            enemyBulletContainer.addChild(bullet);
+        },
         checkCollision: function () {
-            var bullet, enemy, i, l, j, len;
+            var bullet, enemy, i, l, j, len, removeArr = [];
             // check out of screen
             for (i = 0; i < bulletContainer.getNumChildren(); i++) {
                 bullet = bulletContainer.getChildAt(i);
-                if (bullet.y < 0) {
+                if (bullet.y < 0 || bullet.isRemove) {
                     bullet.isRemove = true;
+                    removeArr.push(i);
                 }
             }
+            removeArr.forEach(function (i) {
+                bulletContainer.removeChildAt(i);
+            });
             // check out of screen
+            removeArr = [];
             for (i = 0; i < enemyContainer.getNumChildren(); i++) {
                 enemy = enemyContainer.getChildAt(i);
-                if (enemy.y < 0 || enemy.y > canvas.height) {
+                if (enemy.y < 0 || enemy.y > canvas.height || enemy.isRemove) {
                     enemy.isRemove = true;
+                    removeArr.push(i);
                 }
             }
+            removeArr.forEach(function (i) {
+                enemyContainer.removeChildAt(i);
+            });
+
+            removeArr = [];
+            for (i = 0; i < enemyBulletContainer.getNumChildren(); i++) {
+                bullet = enemyBulletContainer.getChildAt(i);
+                if (bullet.y < 0 || bullet.y > canvas.height || bullet.isRemove) {
+                    bullet.isRemove = true;
+                    removeArr.push(i);
+                }
+            }
+            removeArr.forEach(function (i) {
+                enemyBulletContainer.removeChildAt(i);
+            });
 
             // check bullet hit enemy
             for (i = 0 , l = bulletContainer.getNumChildren(); i < l; i++) {
                 for (j = 0, len = enemyContainer.getNumChildren(); j < len; j++) {
-                    bullet = bulletContainer.getChildAt(i);
                     enemy = enemyContainer.getChildAt(j);
-                    var x = bullet.x - bullet.getTransformedBounds().width / 2;
-                    var y = bullet.y;
-                    var realX = enemy.globalToLocal(x, y).x;
-                    var realY = enemy.globalToLocal(x, y).y;
-                    if (enemy.hitTest(realX, realY)) {
-                        // hit
-                        enemy.hp--;
-                        if (enemy.hp <= 0) {
-                            enemy.isRemove = true;
+                    if (!enemy.isDied) {
+                        bullet = bulletContainer.getChildAt(i);
+
+                        var x = bullet.x - bullet.getTransformedBounds().width / 2;
+                        var y = bullet.y;
+                        var realX = enemy.globalToLocal(x, y).x;
+                        var realY = enemy.globalToLocal(x, y).y;
+                        if (ndgmr.checkPixelCollision(enemy.children[0], bullet, 0.4, false)) {
+                            // hit
+                            // enemy.hp--;
+                            // console.log('died', j, enemy.isDied);
+                            enemy.isDied = true;
                             this.score += enemy.score;
-                            // this.addParticle({x: enemy.x, y: enemy.y});
+
+                            enemy.children[0].gotoAndPlay('boom');
+
+
+                                // this.addParticle({x: enemy.x, y: enemy.y});
+
+                            bullet.isRemove = true;
                         }
-                        bullet.isRemove = true;
                     }
 
                 }
@@ -294,6 +343,18 @@
             l = enemyContainer.getNumChildren();
             for (i = 0; i < l; i++) {
                 enemy = enemyContainer.getChildAt(i);
+                if (!enemy.isDied) {
+                    var intersection = ndgmr.checkPixelCollision(enemy.children[0], plane, 0.4, false);
+                    if (intersection) {
+                        this.currentHP--;
+                        enemy.isDied = true;
+                        this.score += enemy.score;
+
+                        enemy.children[0].gotoAndPlay('boom');
+                        // enemy.isRemove = true;
+                    }
+                }
+                /*enemy = enemyContainer.getChildAt(i);
                 var planeRect = plane.getTransformedBounds();
                 var enemyRect = enemy.getTransformedBounds();
                 if (planeRect.x > enemyRect.x + enemyRect.width ||
@@ -305,15 +366,10 @@
                     this.currentHP--;
                     enemy.isRemove = true;
                     // this.addParticle({x: enemy.x, y: enemy.y});
-                }
+                }*/
             }
 
-            enemyContainer.children = enemyContainer.children.filter(function (enemy) {
-                return !enemy.isRemove
-            });
-            bulletContainer.children = bulletContainer.children.filter(function (bullet) {
-                return !bullet.isRemove
-            });
+
 
         },
         initFPS: function () {
@@ -369,12 +425,30 @@
             maxScore.y = score.getMeasuredHeight() + 10 + score.y;
             hpContainer = new createjs.Container();
 
-            var planeResult = this.loader.getResult('plane');
+
+            var spriteSheet = new createjs.SpriteSheet({
+                framerate: 30,
+                "images": [this.loader.getResult("plane"), this.loader.getResult("plane_weak")],
+                "frames": {"width": 181, "height": 206},
+                // define two animations, run (loops, 1.5x speed) and jump (returns to run):
+                "animations": {
+                    "normal": [0, 0, 'normal'],
+                    "weak": [0, 1, "weak", 0.8]
+                }
+            });
+            plane = this.plane = new createjs.Sprite(spriteSheet);
+            plane.x = canvas.width / 2 - this.config.plane.width / 2;
+            plane.y = canvas.height - this.config.plane.height - 50;
+            plane.scaleX = this.config.plane.width / plane.getBounds().width;
+            plane.scaleY = this.config.plane.height / plane.getBounds().height;
+
+
+           /* var planeResult = this.loader.getResult('plane');
             plane = this.plane = new createjs.Bitmap(planeResult);
             plane.scaleX = this.config.plane.width / plane.getBounds().width;
             plane.scaleY = this.config.plane.height / plane.getBounds().height;
             plane.x = canvas.width / 2 - this.config.plane.width / 2;
-            plane.y = canvas.height - this.config.plane.height - 50;
+            plane.y = canvas.height - this.config.plane.height - 50;*/
 
             // bg
             bgContainer = new createjs.Container();
@@ -409,9 +483,10 @@
             }
 
             bulletContainer = new createjs.Container();
+            this.enemyBulletContainer = enemyBulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
+            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer);
 
             this.updateHP();
             this.stage.addChild(gameContainer);

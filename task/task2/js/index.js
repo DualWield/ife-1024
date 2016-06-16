@@ -8,8 +8,7 @@
         hpContainer,
         plane,
         overContainer,
-        bgContainer,
-        particleContainer;
+        bgContainer;
 
     function isMobile() {
         if (navigator.userAgent.match(/Android/i)
@@ -48,8 +47,20 @@
                     id: 'bullet'
                 },
                 {
-                    src: 'bg' + randomBG + '.jpg',
-                    id: 'bg' + randomBG
+                    src: 'bg_move.png',
+                    id: 'bg_move'
+                },
+                {
+                    src: 'bg1.png',
+                    id: 'bg1'
+                },
+                {
+                    src: 'bg2.png',
+                    id: 'bg2'
+                },
+                {
+                    src: 'bg3.png',
+                    id: 'bg3'
                 },
                 {
                     src: 'hp.png',
@@ -67,7 +78,7 @@
                 speed: 6,
                 interval: 15,
                 currentInterval: 15,
-                width: 5,
+                width: 10,
                 height: 30,
                 tick: function (that) {
                     this.currentInterval--;
@@ -88,14 +99,14 @@
             enemy: [
                 {
                     id: 'enemy1',
-                    speed: 6,
+                    speed: 60,
                     hp: 1,
-                    width: 70,
-                    height: 65,
+                    width: 90,
+                    height: 85,
                     interval: 120,
                     minInterval: 80,
                     score: 10,
-                    tick: function (that) {
+                    tick: function (that, event) {
                         if (this.currentInterval == null) {
                             this.currentInterval = this.interval;
                         }
@@ -106,8 +117,9 @@
                         }
                         //this.move(that);
                     },
-                    move: function (that) {
-                        this.y += this.speed;
+                    move: function (event) {
+
+                        this.y += this.speed * event.delta / 1000;
 
                     }
                 },
@@ -116,7 +128,7 @@
                     width: 70,
                     height: 65,
                     score: 20,
-                    speed: 3,
+                    speed: 40,
                     hp: 3,
                     interval: 200,
                     minInterval: 100,
@@ -132,8 +144,8 @@
                         //this.move(that);
 
                     },
-                    move: function (that) {
-                        this.y += this.speed;
+                    move: function (event) {
+                        this.y += this.speed * event.delta / 1000;
                     }
                 }
             ]
@@ -185,26 +197,24 @@
 
             } else {
 
-                this.config.bullet.tick(this);
+                this.config.bullet.tick(this, event);
 
                 this.config.enemy.forEach(function (enemy) {
-                    enemy.tick(this);
+                    enemy.tick(this, event);
                 }.bind(this));
 
                 enemyContainer.children.forEach(function (enemy) {
-                    enemy.move();
+                    enemy.move(event);
                 }.bind(this));
 
-                particleContainer.children.forEach(function (particle) {
-                    particle.update();
-                });
+
 
                 this.checkCollision();
 
                 this.updateHP();
                 this.updateFPS();
                 this.updateScore();
-                this.updateBG();
+                this.updateBG(event);
             }
 
 
@@ -240,17 +250,7 @@
             enemyContainer.addChild(enemy);
 
         },
-        addParticle: function (obj) {
-            for (var n = 0; n < 10; n += 1) {
-                particleContainer.addChild(new createjs.Particle(
-                    obj.x,
-                    obj.y,
-                    2,
-                    // random opacity to spice it up a bit
-                    'rgba(255,255,255,' + Math.random() + ')'
-                ));
-            }
-        },
+
         checkCollision: function () {
             var bullet, enemy, i, l, j, len;
             // check out of screen
@@ -267,12 +267,7 @@
                     enemy.isRemove = true;
                 }
             }
-            // check out of screen
-            particleContainer.children.forEach(function (particle) {
-                if (particle.y < 0 || particle.y > canvas.height || particle.x < 0 || particle.y > canvas.width) {
-                    particle.isRemove = true;
-                }
-            });
+
             // check bullet hit enemy
             for (i = 0 , l = bulletContainer.getNumChildren(); i < l; i++) {
                 for (j = 0, len = enemyContainer.getNumChildren(); j < len; j++) {
@@ -288,7 +283,7 @@
                         if (enemy.hp <= 0) {
                             enemy.isRemove = true;
                             this.score += enemy.score;
-                            this.addParticle({x: enemy.x, y: enemy.y});
+                            // this.addParticle({x: enemy.x, y: enemy.y});
                         }
                         bullet.isRemove = true;
                     }
@@ -309,7 +304,7 @@
                     // hit
                     this.currentHP--;
                     enemy.isRemove = true;
-                    this.addParticle({x: enemy.x, y: enemy.y});
+                    // this.addParticle({x: enemy.x, y: enemy.y});
                 }
             }
 
@@ -319,9 +314,7 @@
             bulletContainer.children = bulletContainer.children.filter(function (bullet) {
                 return !bullet.isRemove
             });
-            particleContainer.children = particleContainer.children.filter(function (particle) {
-                return !particle.isRemove
-            });
+
         },
         initFPS: function () {
             var fps = this.fps = new createjs.Text('FPS:' + createjs.Ticker.getMeasuredFPS());
@@ -338,11 +331,11 @@
         updateFPS: function () {
             this.fps.text = 'FPS:' + createjs.Ticker.getMeasuredFPS();
         },
-        updateBG: function () {
+        updateBG: function (event) {
             if (bgContainer.y >= canvas.height) {
                 bgContainer.y = 0;
             }
-            bgContainer.y += 1;
+            bgContainer.y += event.delta / 1000 * 10;
         },
         initStart: function () {
             var startContainer = this.startContainer = new createjs.Container();
@@ -385,7 +378,7 @@
 
             // bg
             bgContainer = new createjs.Container();
-            var bgResult = this.loader.getResult('bg' + randomBG);
+            var bgResult = this.loader.getResult('bg_move');
             var bg1 = new createjs.Bitmap(bgResult);
             var bg2 = new createjs.Bitmap(bgResult);
             bg1.x = bg1.y = bg2.x = 0;
@@ -394,10 +387,20 @@
             bg2.y = -canvas.height;
             bgContainer.addChild(bg1, bg2);
 
-            // particle
-            particleContainer = new createjs.Container();
+            var bgConstContainer = new createjs.Container();
+            for (var i = 1, len = 3; i <= len; i++) {
+                bgResult = this.loader.getResult('bg' + i);
+                var bg = new createjs.Bitmap(bgResult);
+                bg.x = bg.y = 0;
+                bg.scaleX = canvas.width / bg.getBounds().width;
+                bg.scaleY = canvas.height / bg.getBounds().height;
+                bgConstContainer.addChild(bg);
+            }
 
-            if (window.DeviceOrientationEvent && isMobile()) {
+
+
+            // if (window.DeviceOrientationEvent && isMobile()) {
+            if (false) {
                 // if support device orientation
                 window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
             } else {
@@ -408,10 +411,10 @@
             bulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer, particleContainer);
+            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyContainer);
 
             this.updateHP();
-            this.stage.addChildAt(gameContainer, 0);
+            this.stage.addChild(gameContainer);
 
         },
         handleDeviceOrientation: function (event) {
@@ -466,24 +469,24 @@
             this.lastMaxScore = this.maxScore;
             localStorage.setItem('MaxScore', this.maxScore);
             createjs.Ticker.setPaused(true);
-
         },
         updateHP: function () {
             hpContainer.removeAllChildren();
             for (var i = 0, len = this.currentHP; i < len; i++) {
                 var hpResult = this.loader.getResult('hp');
                 var hp = new createjs.Bitmap(hpResult);
-                hp.scaleX = 0.1;
-                hp.scaleY = 0.1;
-                hp.x = i * 30;
+                hp.scaleX = hp.scaleY = window.innerWidth / 649;
+                hp.x = i * window.innerWidth / 649 * 62;
                 hpContainer.addChild(hp);
             }
             if (this.currentHP <= 0) {
                 this.gameOver();
                 return false;
             }
-            hpContainer.x = canvas.width - hpContainer.getBounds().width - this.config.margin;
-            hpContainer.y = this.config.margin;
+            // hpContainer.x = canvas.width - hpContainer.getBounds().width - this.config.margin;
+            // hpContainer.y = this.config.margin;
+            hpContainer.x = 285 / 649 * window.innerWidth;
+            hpContainer.y = 19 / 1136 * window.innerHeight;
         },
         updatePlane: function (point) {
             point.x = Math.min(point.x, canvas.width - this.config.plane.width);

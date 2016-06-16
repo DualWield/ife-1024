@@ -64,17 +64,47 @@
         this.setup();
     }
     var enemy = createjs.extend(Enemy, createjs.Container);
-    enemy.setup = function () {
-        var img = new createjs.Bitmap(this.result);
+    enemy.tick = function (event, that) {
+        this.currentInterval--;
+        if (this.currentInterval <= 0) {
+            that.addEnemyBullet(this, that.config.enemyBullet);
+            this.currentInterval = this.interval;
+        }
 
+
+    }
+    enemy.setup = function () {
+
+        var spriteSheet = new createjs.SpriteSheet({
+                framerate: 30,
+                "images": this.result,
+                "frames": {"width": 190, "height": 177},
+                // define two animations, run (loops, 1.5x speed) and jump (returns to run):
+                "animations": {
+                    "normal": [0, 0, 'normal'],
+                    "boom": [1, 4, null, 0.2]
+                }
+            });
+        var img = new createjs.Sprite(spriteSheet);
         img.scaleX = this.width /img.getBounds().width;
         img.scaleY = this.height / img.getBounds().height;
+
+
+       /* var img = new createjs.Bitmap(this.result);
+
+        img.scaleX = this.width /img.getBounds().width;
+        img.scaleY = this.height / img.getBounds().height;*/
 
         /*var hit = new createjs.Shape();
         hit.graphics.beginFill("#000").drawRect(img.x,
             img.y, this.width, this.height);*/
-        this.hitArea = img;
-
+        // this.hitArea = img;
+        var that = this;
+        img.on('animationend', function (obj) {
+            if (obj.name == 'boom') {
+                that.isRemove = true;
+            }
+        })
 
         this.addChild(img);
 

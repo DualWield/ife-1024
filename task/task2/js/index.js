@@ -339,6 +339,19 @@
 
                 }
             }
+            // 检查敌机子弹击中我机
+            for (i = 0 , l = enemyBulletContainer.getNumChildren(); i < l; i++) {
+                bullet = enemyBulletContainer.getChildAt(i);
+
+                if (ndgmr.checkPixelCollision(plane, bullet, 0.4, false)) {
+                    // hit
+                    this.currentHP--;
+                    bullet.isRemove = true;
+
+                }
+
+            }
+
             // check plane hit enemy
             l = enemyContainer.getNumChildren();
             for (i = 0; i < l; i++) {
@@ -550,7 +563,8 @@
             for (var i = 0, len = this.currentHP; i < len; i++) {
                 var hpResult = this.loader.getResult('hp');
                 var hp = new createjs.Bitmap(hpResult);
-                hp.scaleX = hp.scaleY = window.innerWidth / 649;
+                hp.scaleX = window.innerWidth / 649;
+                hp.scaleY = window.innerHeight / 1136;
                 hp.x = i * window.innerWidth / 649 * 62;
                 hpContainer.addChild(hp);
             }

@@ -105,11 +105,9 @@
                 that.isRemove = true;
             }
         })
-
         this.addChild(img);
-
-
     };
+
 
     createjs.Enemy = createjs.promote(Enemy, "Container");
 

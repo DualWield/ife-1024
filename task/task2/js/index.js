@@ -12,7 +12,8 @@
         enemyBulletContainer,
         boss,
         bossContainer,
-        hand;
+        hand,
+        foodContainer;
 
     function isMobile() {
         if (navigator.userAgent.match(/Android/i)
@@ -87,6 +88,18 @@
                 {
                     src: 'boss_bullet_mid.png',
                     id: 'boss_bullet_mid'
+                }, {
+                    src: 'cheese.png',
+                    id: 'cheese'
+                }, {
+                    src: 'chicken.png',
+                    id: 'chicken'
+                }, {
+                    src: 'mushroom.png',
+                    id: 'mushroom'
+                }, {
+                    src: 'bacon.png',
+                    id: 'bacon'
                 }
             ];
     for(var i = 1, len = 4; i <= len; i++) {
@@ -117,6 +130,9 @@
                 speed: 200,
                 width: 16,
                 height: 16
+            },
+            food: {
+                scale: 0.75
             },
             boss: {
                 bullet: {
@@ -393,6 +409,26 @@
 
 
         },
+        addFood: function (enemy) {
+            var foods = ['bacon', 'chicken', 'mushroom', 'cheese'];
+            var food = foods[Math.floor(Math.random() * 4)];
+            var foodResult = this.loader.getResult(food);
+
+
+            food = new createjs.Bitmap(foodResult);
+            food.x = enemy.x;
+            food.y = enemy.y;
+            food.scaleX = food.scaleY = this.config.food.scale;
+            createjs.Tween.get(food)
+            .to({alpha:0, visible:false}, 1000)
+            .to({alpha:1, visible: true}, 1000)
+            .to({alpha:0, visible:false}, 1000)
+            .to({alpha:1, visible: true}, 1000)
+            .to({alpha:0, visible:false}, 1000);
+
+            foodContainer.addChild(food);
+
+        },
         addBossSuperBullet: function (config) {
             var bulletResult = this.loader.getResult('boss_bullet_mid');
             var bullet = new createjs.Bitmap(bulletResult);
@@ -478,13 +514,11 @@
                             // hit
                             // enemy.hp--;
                             // console.log('died', j, enemy.isDied);
+
+                            this.addFood(enemy);
                             enemy.isDied = true;
                             this.score += enemy.score;
-
                             enemy.children[0].gotoAndPlay('boom');
-
-
-                                // this.addParticle({x: enemy.x, y: enemy.y});
 
                             bullet.isRemove = true;
                         }
@@ -753,8 +787,9 @@
 
             bossContainer.addChild(boss, hand);
 
+            foodContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer, bossContainer);
+            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer, bossContainer, foodContainer);
 
             this.updateHP();
             this.stage.addChild(gameContainer);

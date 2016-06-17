@@ -9,7 +9,10 @@
         plane,
         overContainer,
         bgContainer,
-        enemyBulletContainer;
+        enemyBulletContainer,
+        boss,
+        bossContainer,
+        hand;
 
     function isMobile() {
         if (navigator.userAgent.match(/Android/i)
@@ -72,6 +75,18 @@
                 {
                     src: 'enemy_bullet.png',
                     id: 'enemy_bullet'
+                },
+                {
+                    src: 'boss_bullet_left.png',
+                    id: 'boss_bullet_left'
+                },
+                {
+                    src: 'boss_bullet_right.png',
+                    id: 'boss_bullet_right'
+                },
+                {
+                    src: 'boss_bullet_mid.png',
+                    id: 'boss_bullet_mid'
                 }
             ];
     for(var i = 1, len = 4; i <= len; i++) {
@@ -80,6 +95,14 @@
             id: 'enemy_boom' + i
         });
     }
+    var boosImages = ['boss1', 'boss2', 'wuyou1', 'wuyou2', 'wuyouhuaidiao', 'wuyouboom1','wuyouboom2','wuyouboom3','wuyouboom4','wuyouboom5','wuyouboom6','wuyouboom7',
+     'wuzuo1', 'wuzuo2', 'wuzuohuaidiao', 'wuzuoboom1', 'wuzuoboom2', 'wuzuoboom3', 'wuzuoboom4', 'wuzuoboom5', 'wuzuoboom6', 'wuzuoboom7', 'zuizhong', 'zuizhonghong'];
+    boosImages.forEach(function (item) {
+        manifest.push({
+            src: item + '.png',
+            id: item
+        });
+    });
     var gameManager = {
         config: {
             manifest: manifest,
@@ -94,6 +117,85 @@
                 speed: 200,
                 width: 16,
                 height: 16
+            },
+            boss: {
+                bullet: {
+                    speed: 300,
+                    interval: 30,
+                    currentInterval: 30,
+                    width: 16,
+                    height: 16
+                },
+                superBullet: {
+                    interval: 50,
+                    currentInterval: 50,
+                    leftAndRight: {
+                        width: 16,
+                        height: 23,
+                        speed: 200
+                    },
+                    mid: {
+                        width: 20,
+                        height: 28,
+                        speed: 200
+                    }
+
+                },
+                width: 256,
+                height: 161,
+                leftHandHp: 2,
+                rightHandHp: 2,
+                downSpeed: 30,
+                shuffleSpeed: 15,
+                zuizhongHp: 5,
+                counter: 3, // 多久boss开始出来
+                tick: function (event, that) {
+                    if (this.counter > 0) {
+                        this.counter--;
+                    } else {
+                        // boss出动
+                        this.move(event);
+                    }
+
+                    if (boss.status == 'ballBullet') {
+                        this.bullet.currentInterval--;
+                        if (this.bullet.currentInterval < 0) {
+                            that.addBossBullet(this.bullet);
+                            this.bullet.currentInterval = this.bullet.interval;
+                        }
+                    } else if (boss.status == 'zuizhong') {
+                        this.superBullet.currentInterval--;
+                        if (this.superBullet.currentInterval < 0) {
+                            that.addBossSuperBullet(this.superBullet);
+                            this.superBullet.currentInterval = this.superBullet.interval;
+                        }
+                    }
+
+
+                },
+                move: function (event) {
+                    if (bossContainer.y < 70) {
+                        // 往下移动
+                        bossContainer.y += this.downSpeed * event.delta / 1000;
+                    } else {
+                        // 左右移动
+                        if (bossContainer.x < 50) {
+                            this.towardsLeft = true;
+                        }
+                        if (bossContainer.x + bossContainer.getTransformedBounds().width > canvas.width - 50) {
+                            this.towardsLeft = false;
+                        }
+                        if (this.towardsLeft) {
+                            bossContainer.x += this.shuffleSpeed * event.delta / 1000;
+                        } else {
+                            bossContainer.x -= this.shuffleSpeed * event.delta / 1000;
+                        }
+
+
+                    }
+
+
+                }
             },
             bullet: {
                 speed: 300,
@@ -201,9 +303,13 @@
                     enemy.tick(this, event);
                 }.bind(this));
 
+                this.config.boss.tick(event, this);
+
                 enemyContainer.children.forEach(function (enemy) {
                     enemy.tick(event, that);
                 }.bind(this));
+
+
 
                 enemyContainer.children.forEach(function (enemy) {
                     enemy.move(event);
@@ -212,7 +318,11 @@
                 // move
                 for (var i = 0; i < enemyBulletContainer.getNumChildren(); i++) {
                     var bullet = enemyBulletContainer.getChildAt(i);
-                    bullet.y += this.config.enemyBullet.speed * event.delta / 1000;
+                    if (bullet.move) {
+                        bullet.move(event, bullet);
+                    } else {
+                        bullet.y += this.config.enemyBullet.speed * event.delta / 1000;
+                    }
                 }
 
 
@@ -272,6 +382,54 @@
             bullet.scaleY = config.height / bullet.getBounds().height;
             enemyBulletContainer.addChild(bullet);
         },
+        addBossBullet: function (config) {
+            var bulletResult = this.loader.getResult('enemy_bullet');
+            var bullet = new createjs.Bitmap(bulletResult);
+            bullet.x = bossContainer.x + bossContainer.getTransformedBounds().width / 2 - 15;
+            bullet.y = bossContainer.y + bossContainer.getTransformedBounds().height - 60;
+            bullet.scaleX = config.width / bullet.getBounds().width;
+            bullet.scaleY = config.height / bullet.getBounds().height;
+            enemyBulletContainer.addChild(bullet);
+
+
+        },
+        addBossSuperBullet: function (config) {
+            var bulletResult = this.loader.getResult('boss_bullet_mid');
+            var bullet = new createjs.Bitmap(bulletResult);
+            bullet.x = bossContainer.x + bossContainer.getTransformedBounds().width / 2 - 15;
+            bullet.y = bossContainer.y + bossContainer.getTransformedBounds().height - 60;
+            bullet.scaleX = config.mid.width / bullet.getBounds().width;
+            bullet.scaleY = config.mid.height / bullet.getBounds().height;
+            enemyBulletContainer.addChild(bullet);
+
+
+            // 左右比较特殊的子弹
+            bulletResult = this.loader.getResult('boss_bullet_left');
+            bullet = new createjs.Bitmap(bulletResult);
+            bullet.x = bossContainer.x + bossContainer.getTransformedBounds().width / 2 - 15 - 30;
+            bullet.y = bossContainer.y + bossContainer.getTransformedBounds().height - 60;
+            bullet.scaleX = config.mid.width / bullet.getBounds().width;
+            bullet.scaleY = config.mid.height / bullet.getBounds().height;
+            bullet.move = function (event, b) {
+                b.x -= config.mid.speed * Math.cos(67 / 180 * Math.PI) * event.delta / 1000;
+                b.y += config.mid.speed * Math.sin(67 / 180 * Math.PI) * event.delta / 1000;
+            }
+            enemyBulletContainer.addChild(bullet);
+
+            bulletResult = this.loader.getResult('boss_bullet_right');
+            bullet = new createjs.Bitmap(bulletResult);
+            bullet.x = bossContainer.x + bossContainer.getTransformedBounds().width / 2 - 15 + 30;
+            bullet.y = bossContainer.y + bossContainer.getTransformedBounds().height - 60;
+            bullet.scaleX = config.mid.width / bullet.getBounds().width;
+            bullet.scaleY = config.mid.height / bullet.getBounds().height;
+
+            bullet.move = function (event, b) {
+                b.x += config.mid.speed * Math.cos(67 / 180 * Math.PI) * event.delta / 1000;
+                b.y += config.mid.speed * Math.sin(67 / 180 * Math.PI) * event.delta / 1000;
+            }
+
+            enemyBulletContainer.addChild(bullet);
+        },
         checkCollision: function () {
             var bullet, enemy, i, l, j, len, removeArr = [];
             // check out of screen
@@ -316,11 +474,6 @@
                     enemy = enemyContainer.getChildAt(j);
                     if (!enemy.isDied) {
                         bullet = bulletContainer.getChildAt(i);
-
-                        var x = bullet.x - bullet.getTransformedBounds().width / 2;
-                        var y = bullet.y;
-                        var realX = enemy.globalToLocal(x, y).x;
-                        var realY = enemy.globalToLocal(x, y).y;
                         if (ndgmr.checkPixelCollision(enemy.children[0], bullet, 0.4, false)) {
                             // hit
                             // enemy.hp--;
@@ -342,16 +495,79 @@
             // 检查敌机子弹击中我机
             for (i = 0 , l = enemyBulletContainer.getNumChildren(); i < l; i++) {
                 bullet = enemyBulletContainer.getChildAt(i);
-
                 if (ndgmr.checkPixelCollision(plane, bullet, 0.4, false)) {
                     // hit
                     this.currentHP--;
                     bullet.isRemove = true;
-
                 }
 
             }
 
+            // 检查我方子弹击中敌机
+            for (i = 0 , l = bulletContainer.getNumChildren(); i < l; i++) {
+                bullet = bulletContainer.getChildAt(i);
+                var intersection = ndgmr.checkPixelCollision(boss, bullet, 0.4, false);
+                if (intersection) {
+                    // 命中
+                    if (this.config.boss.leftHandHp > 0
+                        && this.config.boss.width / boss.getBounds().width * 20 + boss.x < intersection.x
+                        && this.config.boss.width / boss.getBounds().width *282 + boss.x > intersection.x ) {
+                        // 左臂中弹
+                        this.config.boss.leftHandHp--;
+                        if (this.config.boss.leftHandHp <= 0) {
+                            hand.visible = true;
+                            if (this.config.boss.rightHandHp <= 0) {
+                                // 右边已经跪掉
+                                hand.gotoAndPlay('wuyouleftboom');
+                                boss.gotoAndPlay('zuizhonghong');
+                                boss.status = 'zuizhong';
+
+                                // this.config.boss.status = 'zuizhong';
+                            } else {
+                                boss.status = 'ballBullet';
+                                hand.gotoAndPlay('leftboom');
+                                boss.gotoAndPlay('wuzuo');
+
+                            }
+
+
+                        }
+
+                    }
+                    if (this.config.boss.rightHandHp > 0
+                        && this.config.boss.width / boss.getBounds().width * 430 + boss.x < intersection.x
+                        && this.config.boss.width / boss.getBounds().width * 680 + boss.x > intersection.x ) {
+                        // 左臂中弹
+                        this.config.boss.rightHandHp--;
+                        if (this.config.boss.rightHandHp <= 0) {
+                            hand.visible = true;
+                            if (this.config.boss.leftHandHp <= 0) {
+                                hand.gotoAndPlay('wuzuorightboom');
+                                boss.gotoAndPlay('zuizhonghong');
+                                boss.status = 'zuizhong';
+
+                                // this.config.boss.status = 'zuizhong';
+                            } else {
+                                boss.status = 'ballBullet';
+                                hand.gotoAndPlay('rightboom');
+                                boss.gotoAndPlay('wuyou');
+                            }
+
+                        }
+
+                    }
+
+
+
+                    bullet.isRemove = true;
+
+                    // hit
+                    // enemy.hp--;
+                    // console.log('died', j, enemy.isDied);
+
+                }
+
+            }
             // check plane hit enemy
             l = enemyContainer.getNumChildren();
             for (i = 0; i < l; i++) {
@@ -499,7 +715,46 @@
             this.enemyBulletContainer = enemyBulletContainer = new createjs.Container();
             enemyContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer);
+            bossContainer = new createjs.Container();
+
+            var images = boosImages.map(function (img) {
+                return this.loader.getResult(img);
+            }, this);
+            var spriteSheet = new createjs.SpriteSheet({
+                framerate: 90,
+                "images": images,
+                "frames": {"width": 512, "height": 322},
+                // define two animations, run (loops, 1.5x speed) and jump (returns to run):
+                "animations": {
+                    "normal": [0, 1, 'normal', 0.05],
+                    "wuyou": [2, 3, "wuyou", 0.05],
+                    'wuzuo': [12, 13, 'wuzuo', 0.05],
+                    'wuyouleftboom': [4, 11, null, 0.2],
+                    "leftboom": [5, 11, null, 0.2],
+                    'wuzuorightboom': [14, 21, null, 0.2],
+                    "rightboom": [15, 21, null, 0.2],
+                    'zuizhong': [22, 22, 'zuizhong'],
+                    'zuizhonghong': [22, 23, 'zuizhonghong', 0.05]
+                }
+            });
+            boss = new createjs.Sprite(spriteSheet, 'normal');
+
+            hand = new createjs.Sprite(spriteSheet);
+
+            hand.on('animationend', function (obj) {
+                this.visible = false;
+            });
+            hand.visible = false;
+
+            bossContainer.x = canvas.width / 2 - this.config.boss.width / 2;
+            bossContainer.y = -200;
+            hand.scaleX = boss.scaleX = this.config.boss.width / boss.getBounds().width;
+            hand.scaleY = boss.scaleY = this.config.boss.height / boss.getBounds().height;
+
+            bossContainer.addChild(boss, hand);
+
+
+            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer, bossContainer);
 
             this.updateHP();
             this.stage.addChild(gameContainer);

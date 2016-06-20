@@ -13,7 +13,8 @@
         boss,
         bossContainer,
         hand,
-        foodContainer;
+        foodContainer,
+        scoreContainer;
 
     function isMobile() {
         if (navigator.userAgent.match(/Android/i)
@@ -100,6 +101,9 @@
                 }, {
                     src: 'bacon.png',
                     id: 'bacon'
+                }, {
+                    src: 'score.png',
+                    id: 'score'
                 }
             ];
     for(var i = 1, len = 4; i <= len; i++) {
@@ -116,6 +120,12 @@
             id: item
         });
     });
+    for (var i = 0, len = 10; i < len; i++) {
+        manifest.push({
+            src: i + '.png',
+            id: i
+        });
+    }
     var gameManager = {
         config: {
             manifest: manifest,
@@ -159,17 +169,13 @@
                 },
                 width: 256,
                 height: 161,
-                leftHandHp: 2,
-                rightHandHp: 2,
+                leftHandHp: undefined,
+                rightHandHp: undefined,
                 downSpeed: 30,
                 shuffleSpeed: 15,
-                zuizhongHp: 5,
-                counter: 3, // 多久boss开始出来
+                counter: 5, // 多久boss开始出来
                 tick: function (event, that) {
-                    if (this.counter > 0) {
-                        this.counter--;
-                    } else {
-                        // boss出动
+                    if (that.score > this.counter) {
                         this.move(event);
                     }
 
@@ -244,7 +250,7 @@
                     height: 85,
                     interval: 120,
                     minInterval: 80,
-                    score: 10,
+                    score: 1,
                     tick: function (that, event) {
                         if (this.currentInterval == null) {
                             this.currentInterval = this.interval;
@@ -266,7 +272,6 @@
 
         },
         score: 0,
-        maxScore: 0,
         currentHP: undefined,
         currentBullet: 30,
         init: function () {
@@ -276,7 +281,6 @@
 
             // save last Max Score
             //localStorage.setItem('MaxScore', 0);
-            this.lastMaxScore = localStorage.getItem('MaxScore') || 0;
             //alert(this.lastMaxScore);
             this.loader = new createjs.LoadQueue();
             this.loader.addEventListener('complete', this.handleLoadComplete.bind(this));
@@ -359,7 +363,7 @@
 
             var bulletResult = this.loader.getResult('bullet');
             var bullet = new createjs.Bitmap(bulletResult);
-            bullet.x = this.plane.x + this.config.plane.width / 2 - bullet.getTransformedBounds().width / 2;
+            bullet.x = this.plane.x + this.config.plane.width / 2 - bullet.getTransformedBounds().width + 3;
             bullet.y = this.plane.y - bullet.getTransformedBounds().height / 2;
             bullet.scaleX = obj.width / bullet.getBounds().width;
             bullet.scaleY = obj.height / bullet.getBounds().height;
@@ -416,15 +420,18 @@
 
 
             food = new createjs.Bitmap(foodResult);
-            food.x = enemy.x;
-            food.y = enemy.y;
+            food.x = enemy.x + 10;
+            food.y = enemy.y + 10;
             food.scaleX = food.scaleY = this.config.food.scale;
             createjs.Tween.get(food)
-            .to({alpha:0, visible:false}, 1000)
-            .to({alpha:1, visible: true}, 1000)
-            .to({alpha:0, visible:false}, 1000)
-            .to({alpha:1, visible: true}, 1000)
-            .to({alpha:0, visible:false}, 1000);
+            .to({alpha:0, visible:false}, 500)
+            .to({alpha:1, visible: true}, 500)
+            .to({alpha:0, visible:false}, 500)
+            .to({alpha:1, visible: true}, 500)
+            .to({alpha:0, visible:false}, 500)
+            .call(function () {
+                foodContainer.removeChild(food);
+            });
 
             foodContainer.addChild(food);
 
@@ -465,6 +472,26 @@
             }
 
             enemyBulletContainer.addChild(bullet);
+        },
+        loseHP: function () {
+            this.currentHP--;
+            plane.isInvincible = true;
+            setTimeout(function () {
+                plane.isInvincible = false;
+            }, 2000);
+
+            if (this.currentHP <= 1) {
+                plane.gotoAndPlay('weak');
+            }
+
+        },
+        destoryEnemy: function (enemy) {
+            enemy.isDied = true;
+            this.score += enemy.score;
+            enemy.children[0].gotoAndPlay('boom');
+
+            this.addFood(enemy);
+
         },
         checkCollision: function () {
             var bullet, enemy, i, l, j, len, removeArr = [];
@@ -515,10 +542,7 @@
                             // enemy.hp--;
                             // console.log('died', j, enemy.isDied);
 
-                            this.addFood(enemy);
-                            enemy.isDied = true;
-                            this.score += enemy.score;
-                            enemy.children[0].gotoAndPlay('boom');
+                            this.destoryEnemy(enemy);
 
                             bullet.isRemove = true;
                         }
@@ -527,17 +551,20 @@
                 }
             }
             // 检查敌机子弹击中我机
-            for (i = 0 , l = enemyBulletContainer.getNumChildren(); i < l; i++) {
-                bullet = enemyBulletContainer.getChildAt(i);
-                if (ndgmr.checkPixelCollision(plane, bullet, 0.4, false)) {
-                    // hit
-                    this.currentHP--;
-                    bullet.isRemove = true;
-                }
+            if (!plane.isInvincible) {
+                for (i = 0 , l = enemyBulletContainer.getNumChildren(); i < l; i++) {
+                    bullet = enemyBulletContainer.getChildAt(i);
+                    if (ndgmr.checkPixelCollision(plane, bullet, 0.4, false)) {
+                        // hit
+                        this.loseHP();
+                        bullet.isRemove = true;
 
+                    }
+
+                }
             }
 
-            // 检查我方子弹击中敌机
+            // 检查我方子弹击中boss
             for (i = 0 , l = bulletContainer.getNumChildren(); i < l; i++) {
                 bullet = bulletContainer.getChildAt(i);
                 var intersection = ndgmr.checkPixelCollision(boss, bullet, 0.4, false);
@@ -602,19 +629,30 @@
                 }
 
             }
+            // 检查plane与boss相撞
+            if (!plane.isInvincible) {
+                var intersection = ndgmr.checkPixelCollision(boss, plane, 0.4, false);
+                if (intersection) {
+                    this.loseHP();
+
+                }
+            }
+
+
             // check plane hit enemy
             l = enemyContainer.getNumChildren();
             for (i = 0; i < l; i++) {
                 enemy = enemyContainer.getChildAt(i);
                 if (!enemy.isDied) {
-                    var intersection = ndgmr.checkPixelCollision(enemy.children[0], plane, 0.4, false);
-                    if (intersection) {
-                        this.currentHP--;
-                        enemy.isDied = true;
-                        this.score += enemy.score;
+                    if (!plane.isInvincible) {
+                        var intersection = ndgmr.checkPixelCollision(enemy.children[0], plane, 0.4, false);
+                        if (intersection) {
+                            this.loseHP();
+                            this.destoryEnemy(enemy);
+                            // enemy.isRemove = true;
 
-                        enemy.children[0].gotoAndPlay('boom');
-                        // enemy.isRemove = true;
+
+                        }
                     }
                 }
                 /*enemy = enemyContainer.getChildAt(i);
@@ -643,9 +681,22 @@
             this.stage.addChild(fps);
         },
         updateScore: function () {
-            this.maxScore = Math.max(this.score, this.lastMaxScore);
-            this.scoreText.text = 'Score: ' + this.score;
-            this.maxScoreText.text = 'Max Score: ' + this.maxScore;
+            var first = Math.floor(this.score / 10);
+            var second = this.score % 10;
+
+            firstBitmap.visible = false;
+            secondBitmap.visible = false;
+            firstBitmap = scoreContainer.getChildByName('decade' + first);
+            firstBitmap.visible = true;
+            // firstBitmap.x = 138 * firstBitmap.scaleX;
+
+            secondBitmap = scoreContainer.getChildByName('digit' + second);
+            secondBitmap.visible = true;
+            // secondBitmap.x = 138 * firstBitmap.scaleX;
+
+
+
+
         },
         updateFPS: function () {
             this.fps.text = 'FPS:' + createjs.Ticker.getMeasuredFPS();
@@ -674,18 +725,54 @@
             this.stage.addChild(startContainer);
         },
         initPlay: function () {
+            this.config.boss.leftHandHp = 10;
+            this.config.boss.rightHandHp = 10;
             // game interface
             var gameContainer = this.gameContainer = new createjs.Container();
             var hit = new createjs.Shape();
             hit.graphics.beginFill("#000").drawRect(0, 0, canvas.width, canvas.height);
             gameContainer.hitArea = hit;
             gameContainer.visible = true;
-            var score = this.scoreText = new createjs.Text('Score: ' + this.score, '20px Arial');
-            score.x = this.config.margin;
-            score.y = this.config.margin;
-            var maxScore = this.maxScoreText = new createjs.Text('Max Score: ' + this.maxScore, '20px Arial');
-            maxScore.x = this.config.margin;
-            maxScore.y = score.getMeasuredHeight() + 10 + score.y;
+
+            scoreContainer = new createjs.Container();
+
+            var scoreResult = this.loader.getResult('score');
+            var score = new createjs.Bitmap(scoreResult);
+            score.scaleX = window.innerWidth / 649;
+            score.scaleY = window.innerHeight / 1136;
+            score.x = 13 * score.scaleX ;
+            score.y = 17 * score.scaleY;
+            scoreContainer.addChild(score);
+            for (var i = 0, len = 10; i < len; i++) {
+                var numberResult = this.loader.getResult(i);
+                var num = new createjs.Bitmap(numberResult);
+                num.name = 'digit' + i;
+                num.scaleX = window.innerWidth / 649;
+                num.scaleY = window.innerHeight / 1136;
+                num.x = 181 * num.scaleX;
+                num.y = 17 * num.scaleY;
+                num.visible = false;
+                scoreContainer.addChild(num);
+            }
+            for (var i = 0, len = 10; i < len; i++) {
+                var numberResult = this.loader.getResult(i);
+                var num = new createjs.Bitmap(numberResult);
+                num.name = 'decade' + i;
+                num.scaleX = window.innerWidth / 649;
+                num.scaleY = window.innerHeight / 1136;
+                num.x = 151 * num.scaleX;
+                num.y = 17 * num.scaleY;
+                num.visible = false;
+                scoreContainer.addChild(num);
+            }
+            firstBitmap = scoreContainer.getChildByName('decade0');
+            firstBitmap.visible = true;
+            // firstBitmap.x = 138 * firstBitmap.scaleX;
+
+            secondBitmap = scoreContainer.getChildByName('digit0');
+            secondBitmap.visible = true;
+
+
             hpContainer = new createjs.Container();
 
 
@@ -696,7 +783,7 @@
                 // define two animations, run (loops, 1.5x speed) and jump (returns to run):
                 "animations": {
                     "normal": [0, 0, 'normal'],
-                    "weak": [0, 1, "weak", 0.8]
+                    "weak": [0, 1, "weak", 0.05]
                 }
             });
             plane = this.plane = new createjs.Sprite(spriteSheet);
@@ -789,7 +876,7 @@
 
             foodContainer = new createjs.Container();
 
-            gameContainer.addChild(bgContainer, bgConstContainer, score, maxScore, hpContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer, bossContainer, foodContainer);
+            gameContainer.addChild(bgContainer, plane, bulletContainer, enemyBulletContainer, enemyContainer, bossContainer, foodContainer, bgConstContainer, scoreContainer, hpContainer);
 
             this.updateHP();
             this.stage.addChild(gameContainer);
@@ -844,8 +931,6 @@
             this.startContainer.visible = false;
             this.gameContainer.visible = false;
             this.overContainer.visible = true;
-            this.lastMaxScore = this.maxScore;
-            localStorage.setItem('MaxScore', this.maxScore);
             createjs.Ticker.setPaused(true);
         },
         updateHP: function () {
